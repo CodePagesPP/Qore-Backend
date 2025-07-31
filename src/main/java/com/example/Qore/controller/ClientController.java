@@ -18,10 +18,11 @@ public class ClientController {
     @Autowired
     private UserRepository userRepository;
 
+    // Obtener perfil de usuario autenticado
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByEmail(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(user);

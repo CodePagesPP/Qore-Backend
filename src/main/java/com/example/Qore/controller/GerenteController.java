@@ -12,8 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/admin")
-public class AdminController {
+@RequestMapping("/gerente")
+public class GerenteController {
 
     @Autowired
     private UserRepository userRepository;
@@ -24,6 +24,4 @@ public class AdminController {
         List<User> users = userRepository.findByRole(Role.CLIENT);
         return ResponseEntity.ok(users);
     }
-
-
 }
