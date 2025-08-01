@@ -6,6 +6,8 @@ import com.example.Qore.auth.AuthRequest;
 import com.example.Qore.auth.AuthResponse;
 import com.example.Qore.auth.RegisterRequest;
 import com.example.Qore.auth.jwt.JwtUtil;
+import com.example.Qore.model.Role;
+import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.AuthService;
 import com.example.Qore.service.UserDetailsServiceImpl;
 import com.example.Qore.service.UserService;
@@ -15,10 +17,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/auth")
@@ -39,6 +40,9 @@ public class AuthController {
 
     private final UserService userService;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @PostMapping("/registerAdmin")
     public ResponseEntity<UserDTO> register(@RequestBody AdminDTO request){
         return ResponseEntity.ok(userService.registerAdmin(request));
@@ -53,5 +57,21 @@ public class AuthController {
         final String jwt = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(jwt));
+    }
+
+    @GetMapping("/listAdmin")
+    public ResponseEntity<List<UserDTO>> listAdmin(){
+        return ResponseEntity.ok(userService.getAllAdmins());
+    }
+
+    @PutMapping("/updateAdmin/{id}")
+    public ResponseEntity<UserDTO> updateAdmin(@PathVariable("id") Long id, @RequestBody AdminDTO request){
+        return ResponseEntity.ok(userService.updateAdmin(id, request));
+    }
+
+    @DeleteMapping("/deleteAdmin/{id}")
+    public ResponseEntity<Void> deleteAdmin(@PathVariable("id") Long id){
+        userService.deleteAdmin(id);
+        return ResponseEntity.noContent().build();
     }
 }

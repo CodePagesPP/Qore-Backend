@@ -1,5 +1,6 @@
 package com.example.Qore.controller;
 
+import com.example.Qore.DTO.UserDTO;
 import com.example.Qore.model.Role;
 import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
@@ -20,8 +21,8 @@ public class GerenteController {
 
     //Listar clientes
     @GetMapping("/list-client")
-    public ResponseEntity<List<User>> listClients(){
-        List<User> users = userRepository.findByRole(Role.CLIENT);
+    public ResponseEntity<List<UserDTO>> listClients(){
+        List<UserDTO> users = userRepository.findByRole(Role.CLIENT);
         return ResponseEntity.ok(users);
     }
 }
