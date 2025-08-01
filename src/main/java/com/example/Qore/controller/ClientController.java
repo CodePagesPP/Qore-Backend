@@ -18,7 +18,7 @@ public class ClientController {
     @Autowired
     private UserRepository userRepository;
 
-    // Obtener perfil de usuario autenticado
+
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();
