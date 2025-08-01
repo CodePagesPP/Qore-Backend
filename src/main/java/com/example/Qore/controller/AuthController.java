@@ -1,7 +1,6 @@
 package com.example.Qore.controller;
 
-import com.example.Qore.DTO.AdminDTO;
-import com.example.Qore.DTO.UserDTO;
+import com.example.Qore.DTO.*;
 import com.example.Qore.auth.AuthRequest;
 import com.example.Qore.auth.AuthResponse;
 import com.example.Qore.auth.RegisterRequest;
@@ -9,8 +8,10 @@ import com.example.Qore.auth.jwt.JwtUtil;
 import com.example.Qore.model.Role;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.AuthService;
+import com.example.Qore.service.ClientService;
 import com.example.Qore.service.UserDetailsServiceImpl;
 import com.example.Qore.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,13 +40,39 @@ public class AuthController {
     private AuthService authService;
 
     private final UserService userService;
-
+    private final ClientService clientService;
     @Autowired
     private UserRepository userRepository;
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<UserDTO> register(@RequestBody AdminDTO request){
         return ResponseEntity.ok(userService.registerAdmin(request));
+    }
+
+    @PostMapping("/registerClient")
+    public ResponseEntity<ClientResponseDTO> registerClient(@Valid @RequestBody ClientRegisterDTO dto) {
+        return ResponseEntity.ok(clientService.registerClient(dto));
+    }
+
+    @GetMapping("/clients")
+    public ResponseEntity<List<ClientResponseDTO>> getAllClients() {
+        return ResponseEntity.ok(clientService.getAllActiveClients());
+    }
+
+    @GetMapping("/client/{id}")
+    public ResponseEntity<ClientResponseDTO> getClient(@PathVariable String id) {
+        return ResponseEntity.ok(clientService.getClientByDni(id));
+    }
+
+    @PatchMapping("/client/{id}")
+    public ResponseEntity<ClientResponseDTO> updateClient(@PathVariable String id, @RequestBody ClientUpdateDTO dto) {
+        return ResponseEntity.ok(clientService.updateClient(id, dto));
+    }
+
+    @DeleteMapping("/client/{id}")
+    public ResponseEntity<Void> disableClient(@PathVariable String id) {
+        clientService.disableClient(id);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/login")
@@ -59,19 +86,5 @@ public class AuthController {
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
 
-    @GetMapping("/listAdmin")
-    public ResponseEntity<List<UserDTO>> listAdmin(){
-        return ResponseEntity.ok(userService.getAllAdmins());
-    }
 
-    @PutMapping("/updateAdmin/{id}")
-    public ResponseEntity<UserDTO> updateAdmin(@PathVariable("id") Long id, @RequestBody AdminDTO request){
-        return ResponseEntity.ok(userService.updateAdmin(id, request));
-    }
-
-    @DeleteMapping("/deleteAdmin/{id}")
-    public ResponseEntity<Void> deleteAdmin(@PathVariable("id") Long id){
-        userService.deleteAdmin(id);
-        return ResponseEntity.noContent().build();
-    }
 }

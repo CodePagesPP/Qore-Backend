@@ -2,8 +2,10 @@ package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.AdminDTO;
 import com.example.Qore.DTO.UserDTO;
+import com.example.Qore.model.Admin;
 import com.example.Qore.model.Role;
 import com.example.Qore.model.User;
+import com.example.Qore.repository.AdminRepository;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.UserService;
 import jakarta.persistence.EntityExistsException;
@@ -21,17 +23,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 
 public class UserServiceImpl implements UserService {
-private final UserRepository userRepository;
+private final AdminRepository userRepository;
 private final PasswordEncoder passwordEncoder;
     @Override
     public UserDTO registerAdmin(AdminDTO admin) {
         if(userRepository.findByEmail(admin.getEmail()).isPresent()){
             throw new EntityExistsException("User with this email already exists");
         };
-        User user = User.builder()
+        Admin user = Admin.builder()
                 .email(admin.getEmail())
                 .password(passwordEncoder.encode(admin.getPassword()))
-                .role(admin.getRole())
+                .role(Role.ADMIN)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
 
@@ -46,7 +48,7 @@ private final PasswordEncoder passwordEncoder;
     @Override
     public UserDTO updateAdmin(long id, AdminDTO admin) {
 
-        User adminFound = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with this id does not exist"));
+        Admin adminFound = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with this id does not exist"));
         if(adminFound.getRole() != Role.ADMIN){
             throw new IllegalArgumentException("User is not an admin");
         }
@@ -65,14 +67,14 @@ private final PasswordEncoder passwordEncoder;
 
     @Override
     public void deleteAdmin(long id) {
-        User adminFound = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with this id does not exist"));
+        Admin adminFound = userRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("User with this id does not exist"));
         if(adminFound.getRole() != Role.ADMIN){
             throw new IllegalArgumentException("User is not an admin");
         }
         userRepository.delete(adminFound);
     }
 
-    private UserDTO mapToDTO(User user){
+    private UserDTO mapToDTO(Admin user){
         return UserDTO.builder()
                 .id(user.getId())
                 .email(user.getEmail())
