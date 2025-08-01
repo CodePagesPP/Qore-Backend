@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/client/**").hasRole("CLIENT")
+                        .requestMatchers("/manager/**").hasRole("MANAGER")
                         .anyRequest().authenticated()
                 );
 
