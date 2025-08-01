@@ -1,5 +1,6 @@
 package com.example.Qore.repository;
 
+import com.example.Qore.DTO.UserDTO;
 import com.example.Qore.model.Role;
 import com.example.Qore.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,7 +12,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByEmail(String email);
-    List<User> findByRole(Role role);
+    List<UserDTO> findByRole(Role role);
     Optional<User> findByEmail(String email);
 }
 
