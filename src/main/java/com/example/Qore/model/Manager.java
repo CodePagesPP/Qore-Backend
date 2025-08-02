@@ -8,10 +8,9 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 @Entity
-@Table(name="admin")
+@Table(name="manager")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Manager extends User{
 }

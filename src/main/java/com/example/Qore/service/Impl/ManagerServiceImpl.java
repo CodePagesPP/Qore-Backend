@@ -3,11 +3,9 @@ package com.example.Qore.service.Impl;
 import com.example.Qore.DTO.ManagerRegisterDTO;
 import com.example.Qore.DTO.ManagerResponseDTO;
 import com.example.Qore.DTO.ManagerUpdateDTO;
-import com.example.Qore.model.Admin;
-import com.example.Qore.model.Client;
-import com.example.Qore.model.Manager;
-import com.example.Qore.model.Role;
+import com.example.Qore.model.*;
 import com.example.Qore.repository.ManagerRepository;
+import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.ManagerService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +22,16 @@ import java.util.stream.Collectors;
 public class ManagerServiceImpl implements ManagerService {
     private final ManagerRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
     @Override
     public ManagerResponseDTO registerManager(ManagerRegisterDTO dto) {
 
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("El email ya está en uso");
         }
+
+        RoleE clientRole = roleRepository.findByName("MANAGER")
+                .orElseThrow(() -> new RuntimeException("Rol MANAGER no existe en la base de datos"));
 
         Manager user = Manager.builder()
                 .email(dto.getEmail())
@@ -42,7 +44,7 @@ public class ManagerServiceImpl implements ManagerService {
                 .sex(dto.getSex())
                 .country(dto.getCountry())
                 .birthday(dto.getBirthday())
-                .role(Role.MANAGER)
+                .role(clientRole)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .active(true)
                 .build();
@@ -53,31 +55,23 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public List<ManagerResponseDTO> getAllManagers() {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getRole()== Role.MANAGER)
-                .map(this::mapToDTO).collect(Collectors.toList());
+        return userRepository.findManagerByRoleName("CLIENT").stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public ManagerResponseDTO getManagerByDni(String dni) {
-        Manager user = userRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
-
-        if (user.getRole() != Role.MANAGER || !user.isActive()) {
-            throw new IllegalArgumentException("User is not an active MANAGER");
-        }
+        Manager user = userRepository.findManagerByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("MANAGER with DNI not found"));
 
         return mapToDTO(user);
     }
 
     @Override
     public ManagerResponseDTO updateManager(String dni, ManagerUpdateDTO dto) {
-        Manager user = userRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Manager not found"));
-
-        if (user.getRole() != Role.MANAGER) {
-            throw new IllegalArgumentException("User is not a MANAGER");
-        }
+        Manager user = userRepository.findManagerByDniAndRole(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found or is not a CLIENT"));
 
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -95,12 +89,8 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void disableManager(String dni) {
-        Manager adminFound = userRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Manager with this dni does not exist"));
-
-        if(adminFound.getRole() != Role.ADMIN){
-            throw new IllegalArgumentException("User is not an Manager");
-        }
+        Manager adminFound = userRepository.findManagerByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Manager not found or is not a CLIENT"));
         userRepository.delete(adminFound);
     }
 

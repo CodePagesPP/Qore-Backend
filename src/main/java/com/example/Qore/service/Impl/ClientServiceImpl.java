@@ -5,7 +5,9 @@ import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.DTO.ClientUpdateDTO;
 import com.example.Qore.model.Client;
 import com.example.Qore.model.Role;
+import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.ClientRepository;
+import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.ClientService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
 public class ClientServiceImpl implements ClientService {
     private final ClientRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+
     @Override
     public ClientResponseDTO registerClient(ClientRegisterDTO dto) {
 
@@ -29,6 +33,10 @@ public class ClientServiceImpl implements ClientService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("El email ya está en uso");
         }
+
+
+        RoleE clientRole = roleRepository.findByName("CLIENT")
+                .orElseThrow(() -> new RuntimeException("Rol CLIENT no existe en la base de datos"));
 
 
         Client user = Client.builder()
@@ -42,7 +50,7 @@ public class ClientServiceImpl implements ClientService {
                 .sex(dto.getSex())
                 .country(dto.getCountry())
                 .birthday(dto.getBirthday())
-                .role(Role.CLIENT)
+                .role(clientRole)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .active(true)
                 .build();
@@ -53,32 +61,25 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public List<ClientResponseDTO> getAllActiveClients() {
-        return userRepository.findAll().stream()
-                .filter(user -> user.getRole() == Role.CLIENT && user.isActive())
+        return userRepository.findActiveClientsByRoleName("CLIENT").stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
     public ClientResponseDTO getClientByDni(String dni) {
-        Client user = userRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-        if (user.getRole() != Role.CLIENT || !user.isActive()) {
-            throw new IllegalArgumentException("User is not an active CLIENT");
-        }
+        Client user = userRepository.findActiveClientByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Active CLIENT with DNI not found"));
 
         return mapToDTO(user);
     }
 
     @Override
     public ClientResponseDTO updateClient(String dni, ClientUpdateDTO dto) {
-        Client user = userRepository.findByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
 
-        if (user.getRole() != Role.CLIENT) {
-            throw new IllegalArgumentException("User is not a CLIENT");
-        }
+
+        Client user = userRepository.findClientByDniAndRole(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found or is not a CLIENT"));
 
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -96,12 +97,8 @@ public class ClientServiceImpl implements ClientService {
 
     @Override
     public void disableClient(String id) {
-        Client user = userRepository.findByDni(id)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
-
-        if (user.getRole() != Role.CLIENT) {
-            throw new IllegalArgumentException("User is not a CLIENT");
-        }
+        Client user = userRepository.findActiveClientByDni(id)
+                .orElseThrow(() -> new EntityNotFoundException("Client not found or is not a CLIENT"));
 
         user.setActive(false);
         userRepository.save(user);

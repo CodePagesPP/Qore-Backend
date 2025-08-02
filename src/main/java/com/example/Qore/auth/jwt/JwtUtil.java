@@ -3,12 +3,14 @@ package com.example.Qore.auth.jwt;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -25,7 +27,13 @@ public class JwtUtil {
 
     public String generateToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", userDetails.getAuthorities().stream().findFirst().get().getAuthority());
+        List<String> authorities = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        claims.put("authorities", authorities); // esto ahora incluye todos los permisos YA NO EL ROL aclaarar
+
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(userDetails.getUsername())

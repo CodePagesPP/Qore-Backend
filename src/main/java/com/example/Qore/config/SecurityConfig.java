@@ -46,10 +46,10 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
-                        .requestMatchers("/client/**").hasRole("CLIENT")
-                        .requestMatchers("/manager/**").hasRole("MANAGER")
+                        .requestMatchers("/admin/**").hasAuthority("ADMIN_ACCESS")
+                        .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
+                        .requestMatchers("/manager/**").hasAuthority("MANAGER_ACCESS")
+
                         .anyRequest().authenticated()
                 );
 

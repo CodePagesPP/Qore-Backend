@@ -19,16 +19,4 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public void register(String email, String password, Role role) {
-        if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Usuario ya existe");
-        }
-
-        User user = new User();
-        user.setEmail(email);
-        user.setPassword(passwordEncoder.encode(password));
-        user.setRole(role);
-
-        userRepository.save(user);
-    }
 }
