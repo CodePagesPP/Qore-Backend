@@ -1,14 +1,15 @@
 package com.example.Qore.controller;
 
 import com.example.Qore.DTO.AdminDTO;
+import com.example.Qore.DTO.InstructorRegisterDTO;
+import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.UserDTO;
 import com.example.Qore.auth.AuthRequest;
 import com.example.Qore.auth.AuthResponse;
-import com.example.Qore.auth.RegisterRequest;
 import com.example.Qore.auth.jwt.JwtUtil;
-import com.example.Qore.model.Role;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.AuthService;
+import com.example.Qore.service.InstructorService;
 import com.example.Qore.service.UserDetailsServiceImpl;
 import com.example.Qore.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,8 @@ public class AuthController {
     private AuthService authService;
 
     private final UserService userService;
+
+    private final InstructorService instructorService;
 
     @Autowired
     private UserRepository userRepository;
@@ -73,5 +76,10 @@ public class AuthController {
     public ResponseEntity<Void> deleteAdmin(@PathVariable("id") Long id){
         userService.deleteAdmin(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/registerInstructor")
+    public ResponseEntity<InstructorResponseDTO> registerInstructor(@RequestBody InstructorRegisterDTO request){
+        return ResponseEntity.ok(instructorService.registerInstructor(request));
     }
 }

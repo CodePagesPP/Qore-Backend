@@ -2,6 +2,7 @@ package com.example.Qore.model;
 
 import jakarta.persistence.*;
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -11,10 +12,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name="users")
+@Inheritance(strategy = InheritanceType.JOINED)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@SuperBuilder
 public class User {
 
     @Id
@@ -51,6 +53,9 @@ public class User {
 
     @Column(unique = false)
     private String country;
+
+    @Column(unique = false)
+    private String city;
 
     @Column(unique = false)
     private String address;
