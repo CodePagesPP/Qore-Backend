@@ -1,14 +1,12 @@
 package com.example.Qore.controller;
 
-import com.example.Qore.DTO.*;
+
 import com.example.Qore.auth.AuthRequest;
 import com.example.Qore.auth.AuthResponse;
-import com.example.Qore.auth.RegisterRequest;
 import com.example.Qore.auth.jwt.JwtUtil;
-import com.example.Qore.model.Role;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.AuthService;
-import com.example.Qore.service.ClientService;
+
 import com.example.Qore.service.UserDetailsServiceImpl;
 import com.example.Qore.service.UserService;
 import jakarta.validation.Valid;
@@ -40,7 +38,6 @@ public class AuthController {
     private AuthService authService;
 
     private final UserService userService;
-    private final ClientService clientService;
     @Autowired
     private UserRepository userRepository;
 
@@ -85,6 +82,4 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthResponse(jwt));
     }
-
-
 }
