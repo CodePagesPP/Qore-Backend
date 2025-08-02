@@ -1,14 +1,13 @@
 package com.example.Qore.controller;
 
 
+import com.example.Qore.DTO.*;
 import com.example.Qore.auth.AuthRequest;
 import com.example.Qore.auth.AuthResponse;
 import com.example.Qore.auth.jwt.JwtUtil;
 import com.example.Qore.repository.UserRepository;
-import com.example.Qore.service.AuthService;
+import com.example.Qore.service.*;
 
-import com.example.Qore.service.UserDetailsServiceImpl;
-import com.example.Qore.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,10 @@ public class AuthController {
     private final UserService userService;
     @Autowired
     private UserRepository userRepository;
+
+    private final InstructorService instructorService;
+
+    private final ClientService clientService;
 
     @PostMapping("/registerAdmin")
     public ResponseEntity<UserDTO> register(@RequestBody AdminDTO request){
@@ -81,5 +84,16 @@ public class AuthController {
         final String jwt = jwtUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthResponse(jwt));
+    }
+
+    @DeleteMapping("/deleteAdmin/{id}")
+    public ResponseEntity<Void> deleteAdmin(@PathVariable("id") Long id){
+        userService.deleteAdmin(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/registerInstructor")
+    public ResponseEntity<InstructorResponseDTO> registerInstructor(@RequestBody InstructorRegisterDTO request){
+        return ResponseEntity.ok(instructorService.registerInstructor(request));
     }
 }
