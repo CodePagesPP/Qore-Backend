@@ -1,6 +1,7 @@
 package com.example.Qore.DTO;
 
 import com.example.Qore.model.Role;
+import com.example.Qore.model.RoleE;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,7 +17,7 @@ import java.time.LocalDate;
 public class ClientResponseDTO {
     private long id;
     private String email;
-    private Role role;
+    private RoleE role;
     private String name;
     private String lastName;
     private String phoneNumber;

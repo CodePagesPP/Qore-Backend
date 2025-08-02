@@ -14,7 +14,6 @@ import java.time.LocalDate;
 @Table(name="admin")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Admin extends User{
 }
