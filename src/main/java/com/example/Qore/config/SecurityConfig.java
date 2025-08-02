@@ -49,6 +49,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/manager/**").hasAuthority("MANAGER_ACCESS")
+
                         .anyRequest().authenticated()
                 );
 

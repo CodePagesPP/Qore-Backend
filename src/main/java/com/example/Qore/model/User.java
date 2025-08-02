@@ -55,6 +55,9 @@ public class User {
     private String country;
 
     @Column(unique = false)
+    private String city;
+
+    @Column(unique = false)
     private String address;
 
     @Column(unique = false)
