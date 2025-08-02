@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 @Table(name="Instructors")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 @SuperBuilder
 public class Instructor extends User{
 

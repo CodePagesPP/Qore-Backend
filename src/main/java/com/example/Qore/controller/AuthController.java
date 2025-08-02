@@ -91,9 +91,4 @@ public class AuthController {
         userService.deleteAdmin(id);
         return ResponseEntity.noContent().build();
     }
-
-    @PostMapping("/registerInstructor")
-    public ResponseEntity<InstructorResponseDTO> registerInstructor(@RequestBody InstructorRegisterDTO request){
-        return ResponseEntity.ok(instructorService.registerInstructor(request));
-    }
 }

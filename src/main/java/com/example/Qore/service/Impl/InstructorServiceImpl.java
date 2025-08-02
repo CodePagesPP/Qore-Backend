@@ -5,7 +5,9 @@ import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
 import com.example.Qore.model.Instructor;
 import com.example.Qore.model.Role;
+import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.InstructorRepository;
+import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.InstructorService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
@@ -24,12 +26,17 @@ import java.util.stream.Collectors;
 public class InstructorServiceImpl implements InstructorService {
     private final InstructorRepository instructorRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
 
     @Override
     public InstructorResponseDTO registerInstructor(InstructorRegisterDTO instructor) {
         if(instructorRepository.findByEmail(instructor.getEmail()).isPresent()){
             throw new EntityExistsException("User with this email already exists");
         };
+
+        RoleE instructorRole = roleRepository.findByName("INSTRUCTOR")
+                .orElseThrow(() -> new RuntimeException("Role INSTRUCTOR no existe en la base de datos"));
+
         Instructor instructorCreate = Instructor.builder()
                 .name(instructor.getName())
                 .lastName(instructor.getLastName())
@@ -42,7 +49,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .country(instructor.getAddress())
                 .city(instructor.getCity())
                 .address(instructor.getAddress())
-                .role(Role.INSTRUCTOR)
+                .role(instructorRole)
                 .discipline(instructor.getDiscipline())
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
@@ -52,15 +59,15 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     public List<InstructorResponseDTO> getAllInstructors() {
-        return instructorRepository.findAll().stream().filter(instructor -> instructor.getRole()== Role.INSTRUCTOR).map(this::mapToDTO).collect(Collectors.toList());
+        return instructorRepository.findInstructorByRoleName("INSTRUCTOR").stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
     public InstructorResponseDTO updateInstructor(String dni, InstructorUpdateDTO instructor) {
-        Instructor instructorFound = instructorRepository.findByDni(dni).orElseThrow(()-> new EntityNotFoundException("Instructor with this DNI does not exist"));
-        if(instructorFound.getRole() != Role.INSTRUCTOR){
-            throw new IllegalArgumentException("User is not instructor");
-        }
+        Instructor instructorFound = instructorRepository.findInstructorByDniAndRole(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Instructor not found or is not an Instructor"));
 
         if(instructor.getName() != null) instructorFound.setName(instructor.getName());
         if(instructor.getLastName() != null) instructorFound.setLastName(instructor.getLastName());
@@ -79,11 +86,8 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     public void deleteInstructor(String dni) {
-        Instructor instructorFound = instructorRepository.findByDni(dni).orElseThrow(()-> new EntityNotFoundException("Instructor with this DNI does not exist"));
-        if(instructorFound.getRole() != Role.INSTRUCTOR){
-            throw new IllegalArgumentException("User is not instructor");
-        }
-        instructorRepository.delete(instructorFound);
+        Instructor instructorFound = instructorRepository.findInstructorByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Instructor not found or is not an Instructor"));
     }
 
     private InstructorResponseDTO mapToDTO(Instructor instructor){
@@ -91,6 +95,16 @@ public class InstructorServiceImpl implements InstructorService {
                 .dni(instructor.getDni())
                 .email(instructor.getEmail())
                 .role(instructor.getRole())
+                .id(instructor.getId())
+                .name(instructor.getName())
+                .sex(instructor.getSex())
+                .lastName(instructor.getLastName())
+                .address(instructor.getAddress())
+                .phoneNumber(instructor.getPhoneNumber())
+                .birthday(instructor.getBirthday())
+                .country(instructor.getAddress())
+                .city(instructor.getCity())
+                .discipline(instructor.getDiscipline())
                 .createdAt(instructor.getCreatedAt())
                 .updatedAt(instructor.getUpdatedAt())
                 .build();

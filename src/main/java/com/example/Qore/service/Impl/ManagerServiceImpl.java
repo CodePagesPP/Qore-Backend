@@ -55,7 +55,7 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public List<ManagerResponseDTO> getAllManagers() {
-        return userRepository.findManagerByRoleName("CLIENT").stream()
+        return userRepository.findManagerByRoleName("MANAGER").stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
@@ -71,7 +71,7 @@ public class ManagerServiceImpl implements ManagerService {
     @Override
     public ManagerResponseDTO updateManager(String dni, ManagerUpdateDTO dto) {
         Manager user = userRepository.findManagerByDniAndRole(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found or is not a CLIENT"));
+                .orElseThrow(() -> new EntityNotFoundException("Manager not found or is not a manager"));
 
         if (dto.getEmail() != null) user.setEmail(dto.getEmail());
         if (dto.getPassword() != null) user.setPassword(passwordEncoder.encode(dto.getPassword()));
@@ -88,9 +88,9 @@ public class ManagerServiceImpl implements ManagerService {
     }
 
     @Override
-    public void disableManager(String dni) {
+    public void deleteManager(String dni) {
         Manager adminFound = userRepository.findManagerByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Manager not found or is not a CLIENT"));
+                .orElseThrow(() -> new EntityNotFoundException("Manager not found or is not a MANAGER"));
         userRepository.delete(adminFound);
     }
 

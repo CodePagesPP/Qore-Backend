@@ -48,6 +48,7 @@ public class SecurityConfig {
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/admin/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
+                        .requestMatchers("/instructor/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/manager/**").hasAuthority("MANAGER_ACCESS")
 
                         .anyRequest().authenticated()

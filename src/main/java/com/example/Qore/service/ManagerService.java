@@ -9,5 +9,5 @@ public interface ManagerService {
     List<ManagerResponseDTO> getAllManagers();
     ManagerResponseDTO getManagerByDni(String dni);
     ManagerResponseDTO updateManager(String dni, ManagerUpdateDTO dto);
-    void disableManager(String id);
+    void deleteManager(String id);
 }

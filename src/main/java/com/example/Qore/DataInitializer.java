@@ -22,11 +22,13 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // PERMISOOOOOOOOSSS
         Permission adminPermission = createPermissionIfNotExists("ADMIN_ACCESS");
+        Permission instructorPermission = createPermissionIfNotExists("INSTRUCTOR_ACCESS");
         Permission clientPermission = createPermissionIfNotExists("CLIENT_ACCESS");
 
         // Roles con sus permisos
         createRoleIfNotExists("ADMIN", Set.of(adminPermission));
         createRoleIfNotExists("CLIENT", Set.of(clientPermission));
+        createRoleIfNotExists("INSTRUCTOR", Set.of(instructorPermission));
     }
 
     private Permission createPermissionIfNotExists(String name) {
