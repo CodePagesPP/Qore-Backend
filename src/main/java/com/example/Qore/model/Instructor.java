@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 public class Instructor extends User{
-
     @Column(unique = false)
     private String discipline;
 }

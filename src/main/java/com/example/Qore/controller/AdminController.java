@@ -1,13 +1,11 @@
 package com.example.Qore.controller;
 
-import com.example.Qore.DTO.AdminDTO;
-import com.example.Qore.DTO.InstructorRegisterDTO;
-import com.example.Qore.DTO.InstructorResponseDTO;
-import com.example.Qore.DTO.UserDTO;
+import com.example.Qore.DTO.*;
 import com.example.Qore.model.Role;
 import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.InstructorService;
+import com.example.Qore.service.StaffService;
 import com.example.Qore.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +25,8 @@ public class AdminController {
     private final UserService userService;
 
     private final InstructorService instructorService;
+
+    private final StaffService staffService;
 
     //Listar clientes
     @GetMapping("/list-client")
@@ -54,5 +54,10 @@ public class AdminController {
     @PostMapping("/registerInstructor")
     public ResponseEntity<InstructorResponseDTO> registerInstructor(@RequestBody InstructorRegisterDTO request){
         return ResponseEntity.ok(instructorService.registerInstructor(request));
+    }
+
+    @PostMapping("/registerStaff")
+    public ResponseEntity<StaffResponseDTO> registerStaff(@RequestBody StaffRegisterDTO request){
+        return ResponseEntity.ok(staffService.registerStaff(request));
     }
 }

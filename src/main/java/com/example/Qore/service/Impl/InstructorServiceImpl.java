@@ -35,7 +35,7 @@ public class InstructorServiceImpl implements InstructorService {
         };
 
         RoleE instructorRole = roleRepository.findByName("INSTRUCTOR")
-                .orElseThrow(() -> new RuntimeException("Role INSTRUCTOR no existe en la base de datos"));
+                .orElseThrow(() -> new RuntimeException("Instructor Role not found"));
 
         Instructor instructorCreate = Instructor.builder()
                 .name(instructor.getName())
@@ -79,7 +79,8 @@ public class InstructorServiceImpl implements InstructorService {
         if(instructor.getBirthday() != null) instructorFound.setBirthday(instructor.getBirthday());
         if(instructor.getCountry() != null) instructorFound.setAddress(instructor.getAddress());
         if(instructor.getCity() != null) instructorFound.setCity(instructor.getCity());
-        if (instructor.getAddress() != null) instructorFound.setAddress(instructor.getAddress());
+        if(instructor.getAddress() != null) instructorFound.setAddress(instructor.getAddress());
+        if(instructor.getDiscipline() != null) instructorFound.setDiscipline(instructor.getDiscipline());
         instructorFound.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
         return mapToDTO(instructorRepository.save(instructorFound));
     }
@@ -88,6 +89,7 @@ public class InstructorServiceImpl implements InstructorService {
     public void deleteInstructor(String dni) {
         Instructor instructorFound = instructorRepository.findInstructorByDni(dni)
                 .orElseThrow(() -> new EntityNotFoundException("Instructor not found or is not an Instructor"));
+        instructorRepository.delete(instructorFound);
     }
 
     private InstructorResponseDTO mapToDTO(Instructor instructor){
