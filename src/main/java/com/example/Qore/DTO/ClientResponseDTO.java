@@ -1,6 +1,5 @@
 package com.example.Qore.DTO;
 
-import com.example.Qore.model.Role;
 import com.example.Qore.model.RoleE;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

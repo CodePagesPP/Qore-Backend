@@ -30,7 +30,7 @@ public class ManagerServiceImpl implements ManagerService {
             throw new IllegalArgumentException("El email ya está en uso");
         }
 
-        RoleE clientRole = roleRepository.findByName("MANAGER")
+        RoleE managerRole = roleRepository.findByName("MANAGER")
                 .orElseThrow(() -> new RuntimeException("Rol MANAGER no existe en la base de datos"));
 
         Manager user = Manager.builder()
@@ -44,7 +44,7 @@ public class ManagerServiceImpl implements ManagerService {
                 .sex(dto.getSex())
                 .country(dto.getCountry())
                 .birthday(dto.getBirthday())
-                .role(clientRole)
+                .role(managerRole)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .active(true)
                 .build();
@@ -89,9 +89,9 @@ public class ManagerServiceImpl implements ManagerService {
 
     @Override
     public void deleteManager(String dni) {
-        Manager adminFound = userRepository.findManagerByDni(dni)
+        Manager managerFound = userRepository.findManagerByDni(dni)
                 .orElseThrow(() -> new EntityNotFoundException("Manager not found or is not a MANAGER"));
-        userRepository.delete(adminFound);
+        userRepository.delete(managerFound);
     }
 
     private ManagerResponseDTO mapToDTO(Manager user){

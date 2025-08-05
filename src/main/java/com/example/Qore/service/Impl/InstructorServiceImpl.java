@@ -4,7 +4,6 @@ import com.example.Qore.DTO.InstructorRegisterDTO;
 import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
 import com.example.Qore.model.Instructor;
-import com.example.Qore.model.Role;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.InstructorRepository;
 import com.example.Qore.repository.RoleRepository;
@@ -15,7 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;

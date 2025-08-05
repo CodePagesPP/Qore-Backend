@@ -1,14 +1,11 @@
 package com.example.Qore.DTO;
 
-import com.example.Qore.model.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 
-import java.sql.Date;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 
 @Data

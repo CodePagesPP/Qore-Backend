@@ -3,9 +3,14 @@ package com.example.Qore.controller;
 import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
 import com.example.Qore.model.Instructor;
+import com.example.Qore.model.Manager;
+import com.example.Qore.model.User;
+import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.InstructorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +20,17 @@ import java.util.List;
 @RequestMapping("/instructor")
 public class InstructorController {
      private final InstructorService instructorService;
+
+     private final UserRepository userRepository;
+
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return ResponseEntity.ok(user);
+    }
 
      @GetMapping("/listInstructor")
     public ResponseEntity<List<InstructorResponseDTO>> listInstructor() {

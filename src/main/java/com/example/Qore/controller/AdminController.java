@@ -1,12 +1,9 @@
 package com.example.Qore.controller;
 
 import com.example.Qore.DTO.*;
-import com.example.Qore.model.Role;
-import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
-import com.example.Qore.service.InstructorService;
-import com.example.Qore.service.StaffService;
-import com.example.Qore.service.UserService;
+import com.example.Qore.service.*;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -28,11 +25,14 @@ public class AdminController {
 
     private final StaffService staffService;
 
+    private final ClientService clientService;
+
+    private final ManagerService managerService;
+
     //Listar clientes
-    @GetMapping("/list-client")
-    public ResponseEntity<List<UserDTO>> listClients(){
-        List<UserDTO> users = userRepository.findByRole(Role.CLIENT);
-        return ResponseEntity.ok(users);
+    @GetMapping("/clients")
+    public ResponseEntity<List<ClientResponseDTO>> getAllClients() {
+        return ResponseEntity.ok(clientService.getAllActiveClients());
     }
 
     @GetMapping("/listAdmin")
@@ -59,5 +59,15 @@ public class AdminController {
     @PostMapping("/registerStaff")
     public ResponseEntity<StaffResponseDTO> registerStaff(@RequestBody StaffRegisterDTO request){
         return ResponseEntity.ok(staffService.registerStaff(request));
+    }
+
+    @PostMapping("/registerClient")
+    public ResponseEntity<ClientResponseDTO> registerClient(@Valid @RequestBody ClientRegisterDTO dto) {
+        return ResponseEntity.ok(clientService.registerClient(dto));
+    }
+
+    @PostMapping("/registerManager")
+    public ResponseEntity<ManagerResponseDTO> registerManager(@RequestBody ManagerRegisterDTO request){
+        return ResponseEntity.ok(managerService.registerManager(request));
     }
 }

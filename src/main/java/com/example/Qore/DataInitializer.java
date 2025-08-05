@@ -1,7 +1,6 @@
 package com.example.Qore;
 
 import com.example.Qore.model.Permission;
-import com.example.Qore.model.Role;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.PermissionRepository;
 import com.example.Qore.repository.RoleRepository;
@@ -25,12 +24,14 @@ public class DataInitializer implements CommandLineRunner {
         Permission instructorPermission = createPermissionIfNotExists("INSTRUCTOR_ACCESS");
         Permission staffPermission = createPermissionIfNotExists("STAFF_ACCESS");
         Permission clientPermission = createPermissionIfNotExists("CLIENT_ACCESS");
+        Permission managerPermission = createPermissionIfNotExists("MANAGER_ACCESS");
 
         // Roles con sus permisos
         createRoleIfNotExists("ADMIN", Set.of(adminPermission));
         createRoleIfNotExists("CLIENT", Set.of(clientPermission));
         createRoleIfNotExists("INSTRUCTOR", Set.of(instructorPermission));
         createRoleIfNotExists("STAFF", Set.of(staffPermission));
+        createRoleIfNotExists("MANAGER", Set.of(managerPermission));
     }
 
     private Permission createPermissionIfNotExists(String name) {

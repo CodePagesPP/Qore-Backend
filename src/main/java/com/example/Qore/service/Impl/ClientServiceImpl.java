@@ -4,7 +4,6 @@ import com.example.Qore.DTO.ClientRegisterDTO;
 import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.DTO.ClientUpdateDTO;
 import com.example.Qore.model.Client;
-import com.example.Qore.model.Role;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.repository.RoleRepository;

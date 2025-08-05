@@ -1,6 +1,5 @@
 package com.example.Qore.DTO;
 
-import com.example.Qore.model.Role;
 import lombok.Data;
 
 import java.time.LocalDate;
