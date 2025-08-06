@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/**","/rol/**", "/rooms/**", "/disciplines/**").hasAuthority("ADMIN_ACCESS")
+                        .requestMatchers("/admin/**","/rol/**", "/rooms/**", "/disciplines/**","/class-sessions/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
@@ -54,6 +54,7 @@ public class SecurityConfig {
                         .requestMatchers("/rooms/**").hasAuthority("ROOM_ACCESS")
                         .requestMatchers("/disciplines/**").hasAuthority("DISCIPLINE_ACCESS")
                         .requestMatchers("/rol/**").hasAuthority("ROLE_ACCESS")
+                        .requestMatchers("/class-sessions/**").hasAuthority("CLASS_SESSION_ACCESS")
                         .anyRequest().authenticated()
                 );
 
