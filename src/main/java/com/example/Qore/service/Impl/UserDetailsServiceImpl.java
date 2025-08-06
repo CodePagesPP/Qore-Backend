@@ -1,4 +1,4 @@
-package com.example.Qore.service;
+package com.example.Qore.service.Impl;
 
 import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
