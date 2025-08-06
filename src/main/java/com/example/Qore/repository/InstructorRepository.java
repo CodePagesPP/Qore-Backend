@@ -4,11 +4,13 @@ import com.example.Qore.model.Instructor;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
-public interface InstructorRepository extends JpaRepository<Instructor, Integer> {
+@Repository
+public interface InstructorRepository extends JpaRepository<Instructor, Long> {
     Optional<Instructor> findByEmail(String email);
 
     @Query("SELECT i FROM Instructor i WHERE i.dni = :dni AND i.role.name = 'INSTRUCTOR'")
