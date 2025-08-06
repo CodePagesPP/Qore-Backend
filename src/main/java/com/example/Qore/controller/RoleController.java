@@ -2,7 +2,7 @@ package com.example.Qore.controller;
 
 import com.example.Qore.DTO.RoleDTO;
 import com.example.Qore.model.RoleE;
-import com.example.Qore.service.Impl.RoleService;
+import com.example.Qore.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
