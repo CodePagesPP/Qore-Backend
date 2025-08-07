@@ -20,7 +20,7 @@ public class PlanServiceImpl implements PlanService {
     private final PlanRepository planRepository;
     private final DisciplineRepository disciplineRepository;
 
-    private List<Discipline> validateDisciplines(List<Long> ids) {
+    public List<Discipline> validateDisciplines(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             throw new IllegalStateException("Insert at least one discipline");
         }

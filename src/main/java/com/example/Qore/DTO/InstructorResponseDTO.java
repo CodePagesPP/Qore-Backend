@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -27,7 +28,7 @@ public class InstructorResponseDTO {
     private String city;
     private String address;
     private String dni;
-    private String discipline;
+    private List<Long> disciplineId;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 }
