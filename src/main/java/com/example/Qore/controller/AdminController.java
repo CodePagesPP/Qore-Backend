@@ -16,9 +16,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminController {
 
-    @Autowired
-    private UserRepository userRepository;
-
     private final UserService userService;
 
     private final InstructorService instructorService;

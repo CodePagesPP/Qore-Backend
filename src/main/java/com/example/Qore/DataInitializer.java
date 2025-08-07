@@ -29,6 +29,7 @@ public class DataInitializer implements CommandLineRunner {
         Permission roomPermission = createPermissionIfNotExists("ROOM_ACCESS");
         Permission disciplinePermission = createPermissionIfNotExists("DISCIPLINE_ACCESS");
         Permission classSessionPermission = createPermissionIfNotExists("CLASS_SESSION_ACCESS");
+        Permission excelPermission = createPermissionIfNotExists("EXCEL_ACCESS");
         // Roles con sus permisos
         createRoleIfNotExists("ADMIN", Set.of(adminPermission));
         createRoleIfNotExists("CLIENT", Set.of(clientPermission));
