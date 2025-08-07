@@ -1,4 +1,4 @@
-package com.example.Qore.service.Impl;
+package com.example.Qore.service;
 
 import com.example.Qore.DTO.RoleDTO;
 import com.example.Qore.model.RoleE;

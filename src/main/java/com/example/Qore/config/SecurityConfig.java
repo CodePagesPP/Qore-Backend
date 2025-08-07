@@ -1,7 +1,7 @@
 package com.example.Qore.config;
 
 import com.example.Qore.auth.jwt.JwtAuthenticationFilter;
-import com.example.Qore.service.UserDetailsServiceImpl;
+import com.example.Qore.service.Impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,12 +46,15 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers("/admin/**","/rol/**", "/plans/**").hasAuthority("ADMIN_ACCESS")
+                        .requestMatchers("/admin/**","/rol/**", "/rooms/**", "/disciplines/**","/class-sessions/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
-                        .requestMatchers("/instructor/**").hasAuthority("INSTRUCTOR_ACCESS")
+                        .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
-                        .requestMatchers("/manager/**").hasAuthority("MANAGER_ACCESS")
-
+                        .requestMatchers("/manager/**", "/disciplines/**").hasAuthority("MANAGER_ACCESS")
+                        .requestMatchers("/rooms/**").hasAuthority("ROOM_ACCESS")
+                        .requestMatchers("/disciplines/**").hasAuthority("DISCIPLINE_ACCESS")
+                        .requestMatchers("/rol/**").hasAuthority("ROLE_ACCESS")
+                        .requestMatchers("/class-sessions/**").hasAuthority("CLASS_SESSION_ACCESS")
                         .anyRequest().authenticated()
                 );
 

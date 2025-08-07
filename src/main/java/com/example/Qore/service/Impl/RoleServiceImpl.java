@@ -5,6 +5,7 @@ import com.example.Qore.model.Permission;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.PermissionRepository;
 import com.example.Qore.repository.RoleRepository;
+import com.example.Qore.service.RoleService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

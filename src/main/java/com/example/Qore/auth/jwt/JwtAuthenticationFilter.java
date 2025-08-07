@@ -1,6 +1,6 @@
 package com.example.Qore.auth.jwt;
 
-import com.example.Qore.service.UserDetailsServiceImpl;
+import com.example.Qore.service.Impl.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
