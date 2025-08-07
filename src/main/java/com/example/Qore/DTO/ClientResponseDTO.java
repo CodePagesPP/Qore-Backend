@@ -23,6 +23,7 @@ public class ClientResponseDTO {
     private LocalDate birthday;
     private String sex;
     private String country;
+    private String city;
     private String address;
     private String dni;
     private Timestamp createdAt;

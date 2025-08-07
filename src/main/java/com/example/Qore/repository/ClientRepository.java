@@ -24,4 +24,5 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
     @Query("SELECT c FROM Client c WHERE c.role.name = :roleName AND c.active = true")
     List<Client> findActiveClientsByRoleName(@Param("roleName") String roleName);
 
+    boolean existsByDni(String dni);
 }

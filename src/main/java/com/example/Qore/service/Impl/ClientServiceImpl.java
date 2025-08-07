@@ -33,6 +33,10 @@ public class ClientServiceImpl implements ClientService {
             throw new IllegalArgumentException("El email ya está en uso");
         }
 
+        if(userRepository.existsByDni(dto.getDni())){
+            throw new IllegalArgumentException("El dni ya esta en uso");
+        }
+
 
         RoleE clientRole = roleRepository.findByName("CLIENT")
                 .orElseThrow(() -> new RuntimeException("Rol CLIENT no existe en la base de datos"));
@@ -48,6 +52,7 @@ public class ClientServiceImpl implements ClientService {
                 .dni(dto.getDni())
                 .sex(dto.getSex())
                 .country(dto.getCountry())
+                .city(dto.getCity())
                 .birthday(dto.getBirthday())
                 .role(clientRole)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
@@ -88,6 +93,7 @@ public class ClientServiceImpl implements ClientService {
         if (dto.getBirthday() != null) user.setBirthday(dto.getBirthday());
         if (dto.getSex() != null) user.setSex(dto.getSex());
         if (dto.getCountry() != null) user.setCountry(dto.getCountry());
+        if (dto.getCity() != null) user.setCity(dto.getCity());
         if (dto.getAddress() != null) user.setAddress(dto.getAddress());
         if (dto.getDni() != null) user.setDni(dto.getDni());
 
@@ -114,6 +120,7 @@ public class ClientServiceImpl implements ClientService {
                 .birthday(user.getBirthday())
                 .dni(user.getDni())
                 .country(user.getCountry())
+                .city(user.getCity())
                 .sex(user.getSex())
                 .address(user.getAddress())
                 .createdAt(user.getCreatedAt())
