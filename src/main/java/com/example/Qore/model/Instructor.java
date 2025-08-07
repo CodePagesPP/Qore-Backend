@@ -18,6 +18,5 @@ import java.util.List;
 @SuperBuilder
 public class Instructor extends User{
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinColumn(name = "discipline_id", nullable = false)
     private List<Discipline> discipline;
 }

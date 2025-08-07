@@ -47,7 +47,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (!instructor.getDiscipline().getId().equals(discipline.getId())) {
+        if (!instructor.getDiscipline().contains(discipline)) {
             throw new RuntimeException("Instructor does not belong to the given discipline");
         }
 
@@ -71,7 +71,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (!instructor.getDiscipline().getId().equals(discipline.getId())) {
+        if (!instructor.getDiscipline().contains(discipline)) {
             throw new RuntimeException("Instructor does not belong to the given discipline");
         }
 
