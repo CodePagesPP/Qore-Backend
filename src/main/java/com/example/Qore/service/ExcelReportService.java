@@ -1,0 +1,12 @@
+package com.example.Qore.service;
+
+import com.example.Qore.model.Client;
+import org.springframework.stereotype.Service;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.util.List;
+
+public interface ExcelReportService {
+    ByteArrayInputStream generateClientBirthdaysReport(List<Client> clients) throws IOException;
+}
