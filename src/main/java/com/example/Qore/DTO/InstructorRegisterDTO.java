@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -24,5 +25,5 @@ public class InstructorRegisterDTO {
     private String country;
     private String city;
     private String address;
-    private String discipline;
+    private List<Long> disciplineId;
 }

@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 public class InstructorUpdateDTO {
@@ -18,6 +19,6 @@ public class InstructorUpdateDTO {
     private String country;
     private String city;
     private String address;
-    private String discipline;
+    private List<Long> disciplineId;
     private Timestamp updatedAt;
 }

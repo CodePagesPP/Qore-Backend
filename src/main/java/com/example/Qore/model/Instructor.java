@@ -9,6 +9,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name="Instructors")
@@ -16,6 +17,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @SuperBuilder
 public class Instructor extends User{
-    @Column(unique = false)
-    private String discipline;
+    @ManyToMany(fetch = FetchType.LAZY)
+    private List<Discipline> discipline;
 }

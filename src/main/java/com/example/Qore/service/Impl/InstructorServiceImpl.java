@@ -3,11 +3,14 @@ package com.example.Qore.service.Impl;
 import com.example.Qore.DTO.InstructorRegisterDTO;
 import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
+import com.example.Qore.model.Discipline;
 import com.example.Qore.model.Instructor;
 import com.example.Qore.model.RoleE;
+import com.example.Qore.repository.DisciplineRepository;
 import com.example.Qore.repository.InstructorRepository;
 import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.InstructorService;
+import com.example.Qore.service.PlanService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +28,8 @@ public class InstructorServiceImpl implements InstructorService {
     private final InstructorRepository instructorRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private final DisciplineRepository disciplineRepository;
+    private final PlanServiceImpl planService;
 
     @Override
     public InstructorResponseDTO registerInstructor(InstructorRegisterDTO instructor) {
@@ -34,6 +39,8 @@ public class InstructorServiceImpl implements InstructorService {
 
         RoleE instructorRole = roleRepository.findByName("INSTRUCTOR")
                 .orElseThrow(() -> new RuntimeException("Instructor Role not found"));
+
+        List <Discipline> disciplines = planService.validateDisciplines(instructor.getDisciplineId());
 
         Instructor instructorCreate = Instructor.builder()
                 .name(instructor.getName())
@@ -48,7 +55,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .city(instructor.getCity())
                 .address(instructor.getAddress())
                 .role(instructorRole)
-                .discipline(instructor.getDiscipline())
+                .discipline(disciplines)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .build();
 
@@ -78,7 +85,7 @@ public class InstructorServiceImpl implements InstructorService {
         if(instructor.getCountry() != null) instructorFound.setAddress(instructor.getAddress());
         if(instructor.getCity() != null) instructorFound.setCity(instructor.getCity());
         if(instructor.getAddress() != null) instructorFound.setAddress(instructor.getAddress());
-        if(instructor.getDiscipline() != null) instructorFound.setDiscipline(instructor.getDiscipline());
+        if (instructor.getDisciplineId() != null) instructorFound.setDiscipline(planService.validateDisciplines(instructor.getDisciplineId()));
         instructorFound.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
         return mapToDTO(instructorRepository.save(instructorFound));
     }
@@ -91,6 +98,9 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     private InstructorResponseDTO mapToDTO(Instructor instructor){
+
+        List<Long> disciplines = instructor.getDiscipline().stream().map(Discipline::getId).collect(Collectors.toList());
+
         return InstructorResponseDTO.builder()
                 .dni(instructor.getDni())
                 .email(instructor.getEmail())
@@ -104,7 +114,7 @@ public class InstructorServiceImpl implements InstructorService {
                 .birthday(instructor.getBirthday())
                 .country(instructor.getAddress())
                 .city(instructor.getCity())
-                .discipline(instructor.getDiscipline())
+                .disciplineId(disciplines)
                 .createdAt(instructor.getCreatedAt())
                 .updatedAt(instructor.getUpdatedAt())
                 .build();
