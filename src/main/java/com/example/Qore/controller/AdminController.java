@@ -1,12 +1,15 @@
 package com.example.Qore.controller;
 
 import com.example.Qore.DTO.*;
+import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,6 +28,8 @@ public class AdminController {
     private final ClientService clientService;
 
     private final ManagerService managerService;
+
+    private final UserRepository userRepository;
 
     //Listar clientes
     @GetMapping("/clients")
@@ -66,5 +71,14 @@ public class AdminController {
     @PostMapping("/registerManager")
     public ResponseEntity<ManagerResponseDTO> registerManager(@RequestBody ManagerRegisterDTO request){
         return ResponseEntity.ok(managerService.registerManager(request));
+    }
+
+    @GetMapping("/profile")
+    public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
+        String username = userDetails.getUsername();
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        return ResponseEntity.ok(user);
     }
 }
