@@ -46,7 +46,6 @@ public class ManagerServiceImpl implements ManagerService {
                 .birthday(dto.getBirthday())
                 .role(managerRole)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
-                .active(true)
                 .build();
 
         Manager savedUser = userRepository.save(user);

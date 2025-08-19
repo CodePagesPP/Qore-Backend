@@ -65,8 +65,5 @@ public class User {
 
     @Column(unique = false)
     private Timestamp updatedAt;
-
-    @Column(nullable = false)
-    private boolean active = true;
 }
 
