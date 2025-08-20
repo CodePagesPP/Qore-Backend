@@ -13,6 +13,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/admin")
@@ -80,5 +82,16 @@ public class AdminController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/listPersonal")
+    public ResponseEntity<Map<String, List<UserResponseDTO>>> listPersonal() {
+        List<UserResponseDTO> users = userService.getAllNonClients();
+
+
+        Map<String, List<UserResponseDTO>> grouped =
+                users.stream().collect(Collectors.groupingBy(UserResponseDTO::getRole));
+
+        return ResponseEntity.ok(grouped);
     }
 }
