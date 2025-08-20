@@ -2,6 +2,7 @@ package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.AdminDTO;
 import com.example.Qore.DTO.UserDTO;
+import com.example.Qore.DTO.UserResponseDTO;
 import com.example.Qore.model.*;
 import com.example.Qore.repository.AdminRepository;
 import com.example.Qore.repository.RoleRepository;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 public class UserServiceImpl implements UserService {
 private final AdminRepository userRepository;
+private final UserRepository userRepository2;
 private final PasswordEncoder passwordEncoder;
 private final RoleRepository roleRepository;
     @Override
@@ -77,6 +79,25 @@ private final RoleRepository roleRepository;
         Admin adminFound = userRepository.findAdminById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Client not found or is not a ADMIN"));
         userRepository.delete(adminFound);
+    }
+
+
+    public List<UserResponseDTO> getAllNonClients() {
+        return userRepository2.findAllNonClients().stream()
+                .map(user -> UserResponseDTO.builder()
+                        .id(user.getId())
+                        .name(user.getName())
+                        .lastName(user.getLastName())
+                        .email(user.getEmail())
+                        .dni(user.getDni())
+                        .role(user.getRole().getName())
+                        .createdAt(user.getCreatedAt())
+                        .sex(user.getSex())
+                        .birthday(user.getBirthday())
+                        .phoneNumber(user.getPhoneNumber())
+                        .updatedAt(user.getUpdatedAt())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     private UserDTO mapToDTO(Admin user){
