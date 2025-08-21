@@ -1,8 +1,6 @@
 package com.example.Qore.service.Impl;
 
-import com.example.Qore.DTO.AdminDTO;
-import com.example.Qore.DTO.UserDTO;
-import com.example.Qore.DTO.UserResponseDTO;
+import com.example.Qore.DTO.*;
 import com.example.Qore.model.*;
 import com.example.Qore.repository.AdminRepository;
 import com.example.Qore.repository.RoleRepository;
@@ -47,6 +45,42 @@ private final RoleRepository roleRepository;
 
         System.out.println(user.getRole());
         return mapToDTO(userRepository.save(user));
+    }
+
+    public UserResponseDTO registerWorker(UserRegisterDTO dto) {
+
+
+        if (userRepository2.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("El email ya está en uso");
+        }
+
+        if(userRepository2.existsByDni(dto.getDni())){
+            throw new IllegalArgumentException("El dni ya esta en uso");
+        }
+
+
+        RoleE userRole = roleRepository.findById(dto.getRoleId())
+                .orElseThrow(() -> new RuntimeException("El id de este rol no existe en la base de datos"));
+
+
+        User user = User.builder()
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .name(dto.getName())
+                .lastName(dto.getLastName())
+                .phoneNumber(dto.getPhoneNumber())
+                .address(dto.getAddress())
+                .dni(dto.getDni())
+                .sex(dto.getSex())
+                .country(dto.getCountry())
+                .city(dto.getCity())
+                .birthday(dto.getBirthday())
+                .role(userRole)
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .build();
+
+        User savedUser = userRepository2.save(user);
+        return mapToDTO(savedUser);
     }
 
     @Override
@@ -110,5 +144,21 @@ private final RoleRepository roleRepository;
                 .build();
     }
 
-
+    private UserResponseDTO mapToDTO(User dto){
+        return UserResponseDTO.builder()
+                .id(dto.getId())
+                .email(dto.getEmail())
+                .name(dto.getName())
+                .lastName(dto.getLastName())
+                .phoneNumber(dto.getPhoneNumber())
+                .address(dto.getAddress())
+                .dni(dto.getDni())
+                .sex(dto.getSex())
+                .country(dto.getCountry())
+                .city(dto.getCity())
+                .birthday(dto.getBirthday())
+                .role(dto.getRole().getName())
+                .createdAt(Timestamp.valueOf(LocalDateTime.now()))
+                .build();
+    }
 }

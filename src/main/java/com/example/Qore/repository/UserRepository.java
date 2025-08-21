@@ -10,6 +10,9 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    boolean existsByEmail(String email);
+
+    boolean existsByDni(String dni);
 
     Optional<User> findByEmail(String email);
     @Query("SELECT u FROM User u WHERE u.role.name <> 'CLIENT'")

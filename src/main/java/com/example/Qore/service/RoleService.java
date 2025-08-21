@@ -1,6 +1,7 @@
 package com.example.Qore.service;
 
 import com.example.Qore.DTO.RoleDTO;
+import com.example.Qore.DTO.UserResponseDTO;
 import com.example.Qore.model.RoleE;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface RoleService {
     RoleE getRoleById(Long id);
     RoleE updateRole(Long id, RoleDTO dto);
     void deleteRole(Long id);
+    List<RoleDTO> getAllNonClients();
 }

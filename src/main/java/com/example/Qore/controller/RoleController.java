@@ -40,4 +40,11 @@ public class RoleController {
         roleService.deleteRole(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/listRoleNoClient")
+    public ResponseEntity<List<RoleDTO>> listRoleNoClient() {
+        List<RoleDTO> roles = roleService.getAllNonClients();
+        return ResponseEntity.ok(roles);
+    }
+
 }

@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import javax.management.relation.Role;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -32,6 +33,7 @@ public class AdminController {
     private final ManagerService managerService;
 
     private final UserRepository userRepository;
+    private final RoleService roleService;
 
     //Listar clientes
     @GetMapping("/clients")
@@ -73,6 +75,11 @@ public class AdminController {
     @PostMapping("/registerManager")
     public ResponseEntity<ManagerResponseDTO> registerManager(@RequestBody ManagerRegisterDTO request){
         return ResponseEntity.ok(managerService.registerManager(request));
+    }
+
+    @PostMapping("/registerWorker")
+    public ResponseEntity<UserResponseDTO> registerWorker(@Valid @RequestBody UserRegisterDTO dto) {
+        return ResponseEntity.ok(userService.registerWorker(dto));
     }
 
     @GetMapping("/profile")

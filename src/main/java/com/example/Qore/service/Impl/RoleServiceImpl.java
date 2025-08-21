@@ -1,6 +1,7 @@
 package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.RoleDTO;
+import com.example.Qore.DTO.UserResponseDTO;
 import com.example.Qore.model.Permission;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.PermissionRepository;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -61,5 +63,17 @@ public class RoleServiceImpl implements RoleService {
             throw new EntityNotFoundException("Rol no encontrado con ID: " + id);
         }
         roleRepository.deleteById(id);
+    }
+
+    @Override
+    public List<RoleDTO> getAllNonClients() {
+        return roleRepository.findAllNoRoleClient().stream()
+                .map(role -> RoleDTO.builder()
+                        .id(role.getId())
+                        .name(role.getName())
+                        .description(role.getDescription())
+                        .permissionIds(role.getPermissions().stream().map(Permission::getId).collect(Collectors.toSet()))
+                        .build())
+                .collect(Collectors.toList());
     }
 }
