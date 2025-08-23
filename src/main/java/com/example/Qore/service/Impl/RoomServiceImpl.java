@@ -3,6 +3,7 @@ package com.example.Qore.service.Impl;
 import com.example.Qore.DTO.RoomRequestDTO;
 import com.example.Qore.DTO.RoomResponseDTO;
 import com.example.Qore.model.Room;
+import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.RoomRepository;
 import com.example.Qore.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final ClassSessionRepository classSessionRepository;
 
     @Override
     public RoomResponseDTO create(RoomRequestDTO dto) {
@@ -43,6 +45,10 @@ public class RoomServiceImpl implements RoomService {
     public void delete(Long id) {
         if (!roomRepository.existsById(id)) {
             throw new RuntimeException("Sala no encontrada");
+        }
+
+        if (classSessionRepository.existsByRoomId(id)) {
+            throw new IllegalStateException("No se puede eliminar la sala porque está asignada a clases.");
         }
         roomRepository.deleteById(id);
     }

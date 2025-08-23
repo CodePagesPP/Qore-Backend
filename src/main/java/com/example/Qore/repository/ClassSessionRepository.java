@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ClassSessionRepository extends JpaRepository<ClassSession, Long> {
+    boolean existsByRoomId(Long roomId);
 }
