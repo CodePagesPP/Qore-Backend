@@ -1,9 +1,6 @@
 package com.example.Qore.service;
 
-import com.example.Qore.DTO.AdminDTO;
-import com.example.Qore.DTO.UserDTO;
-import com.example.Qore.DTO.UserRegisterDTO;
-import com.example.Qore.DTO.UserResponseDTO;
+import com.example.Qore.DTO.*;
 
 import java.util.List;
 
@@ -14,4 +11,5 @@ public interface UserService {
     void deleteAdmin(long id);
     List<UserResponseDTO> getAllNonClients();
     UserResponseDTO registerWorker(UserRegisterDTO dto);
+    UserResponseDTO updateWorker(String dni, UserUpdateDTO dto);
 }

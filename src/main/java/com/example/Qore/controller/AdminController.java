@@ -82,6 +82,11 @@ public class AdminController {
         return ResponseEntity.ok(userService.registerWorker(dto));
     }
 
+    @PutMapping("/updateWorker/{dni}")
+    public ResponseEntity<UserResponseDTO> updateWorker(@PathVariable("dni") String dni ,@RequestBody UserUpdateDTO dto) {
+        return ResponseEntity.ok(userService.updateWorker(dni, dto));
+    }
+
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
         String username = userDetails.getUsername();

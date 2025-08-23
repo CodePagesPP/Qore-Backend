@@ -84,6 +84,27 @@ private final RoleRepository roleRepository;
     }
 
     @Override
+    public UserResponseDTO updateWorker(String dni, UserUpdateDTO user) {
+        User userFound = userRepository2.findWorkerByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Worker not found or is not a worker"));
+
+        if(user.getName() != null) userFound.setName(user.getName());
+        if(user.getLastName() != null) userFound.setLastName(user.getLastName());
+        if(user.getEmail() != null) userFound.setEmail(user.getEmail());
+        if(user.getPassword() != null) userFound.setPassword(passwordEncoder.encode(user.getPassword()));
+        if(user.getSex() != null) userFound.setSex(user.getSex());
+        if(user.getPhoneNumber()!= null) userFound.setPhoneNumber(user.getPhoneNumber());
+        if(user.getDni() != null) userFound.setDni(user.getDni());
+        if(user.getBirthday() != null) userFound.setBirthday(user.getBirthday());
+        if(user.getCountry() != null) userFound.setCountry(user.getCountry());
+        if(user.getCity() != null) userFound.setCity(user.getCity());
+        if(user.getAddress() != null) userFound.setAddress(user.getAddress());
+        userFound.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
+
+        return mapToDTO(userRepository2.save(userFound));
+    }
+
+    @Override
     public List<UserDTO> getAllAdmins() {
         return userRepository.findAdminByRoleName("ADMIN").stream()
                 .map(this::mapToDTO)
