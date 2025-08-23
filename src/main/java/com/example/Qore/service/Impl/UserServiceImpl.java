@@ -118,21 +118,37 @@ private final RoleRepository roleRepository;
 
     public List<UserResponseDTO> getAllNonClients() {
         return userRepository2.findAllNonClients().stream()
-                .map(user -> UserResponseDTO.builder()
-                        .id(user.getId())
-                        .name(user.getName())
-                        .lastName(user.getLastName())
-                        .email(user.getEmail())
-                        .dni(user.getDni())
-                        .role(user.getRole().getName())
-                        .createdAt(user.getCreatedAt())
-                        .sex(user.getSex())
-                        .birthday(user.getBirthday())
-                        .phoneNumber(user.getPhoneNumber())
-                        .updatedAt(user.getUpdatedAt())
-                        .build())
+                .map(user -> {
+                    UserResponseDTO.UserResponseDTOBuilder builder = UserResponseDTO.builder()
+                            .id(user.getId())
+                            .name(user.getName())
+                            .lastName(user.getLastName())
+                            .email(user.getEmail())
+                            .dni(user.getDni())
+                            .role(user.getRole().getName())
+                            .createdAt(user.getCreatedAt())
+                            .sex(user.getSex())
+                            .birthday(user.getBirthday())
+                            .phoneNumber(user.getPhoneNumber())
+                            .updatedAt(user.getUpdatedAt());
+
+                    if (user instanceof Staff staff) {
+                        builder.area(staff.getArea());
+                    }
+
+                    if (user instanceof Instructor instructor) {
+                        builder.disciplineId(
+                                instructor.getDiscipline().stream()
+                                        .map(Discipline::getId)
+                                        .collect(Collectors.toList())
+                        );
+                    }
+
+                    return builder.build();
+                })
                 .collect(Collectors.toList());
     }
+
 
     private UserDTO mapToDTO(Admin user){
         return UserDTO.builder()

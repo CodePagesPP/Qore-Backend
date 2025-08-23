@@ -26,7 +26,7 @@ public class PlanServiceImpl implements PlanService {
         }
         List<Discipline> found = disciplineRepository.findAllById(ids);
         if (found.size() != ids.size()) {
-            throw new IllegalStateException("One or more IDs does not exist");
+            throw new IllegalStateException("Disciplinas no existentes");
         }
         return found;
     }
@@ -34,7 +34,7 @@ public class PlanServiceImpl implements PlanService {
     @Override
     public PlanResponseDTO create(PlanRegisterDTO plan) {
         if (planRepository.findByName(plan.getName()).isPresent()) {
-            throw new IllegalArgumentException("Existing plan");
+            throw new IllegalArgumentException("Plan Existente");
         }
 
         List <Discipline> disciplines = validateDisciplines(plan.getDiscipline_id());
