@@ -31,11 +31,11 @@ public class DataInitializer implements CommandLineRunner {
         Permission classSessionPermission = createPermissionIfNotExists("CLASS_SESSION_ACCESS");
         Permission excelPermission = createPermissionIfNotExists("EXCEL_ACCESS");
         // Roles con sus permisos
-        createRoleIfNotExists("ADMIN", Set.of(adminPermission));
-        createRoleIfNotExists("CLIENT", Set.of(clientPermission));
-        createRoleIfNotExists("INSTRUCTOR", Set.of(instructorPermission));
-        createRoleIfNotExists("STAFF", Set.of(staffPermission));
-        createRoleIfNotExists("MANAGER", Set.of(managerPermission));
+        createRoleIfNotExists("ADMIN","ROL ADMIN" ,Set.of(adminPermission));
+        createRoleIfNotExists("CLIENT","ROL CLIENT" ,Set.of(clientPermission));
+        createRoleIfNotExists("INSTRUCTOR","ROL INSTRUCTOR" ,Set.of(instructorPermission));
+        createRoleIfNotExists("STAFF","ROL STAFF" ,Set.of(staffPermission));
+        createRoleIfNotExists("MANAGER","ROL MANAGER" ,Set.of(managerPermission));
     }
 
     private Permission createPermissionIfNotExists(String name) {
@@ -43,10 +43,11 @@ public class DataInitializer implements CommandLineRunner {
                 .orElseGet(() -> permissionRepository.save(new Permission(name)));
     }
 
-    private void createRoleIfNotExists(String name, Set<Permission> permissions) {
+    private void createRoleIfNotExists(String name, String description,Set<Permission> permissions) {
         if (roleRepository.findByName(name).isEmpty()) {
             RoleE role = new RoleE();
             role.setName(name);
+            role.setDescription(description);
             role.setPermissions(permissions);
             roleRepository.save(role);
         }

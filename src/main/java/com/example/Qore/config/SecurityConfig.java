@@ -55,7 +55,8 @@ public class SecurityConfig {
                                          "/instructor/**",
                                          "/staff/**",
                                          "/manager/**",
-                                         "/disciplines/**").hasAuthority("ADMIN_ACCESS")
+                                         "/disciplines/**",
+                                         "/permission/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
