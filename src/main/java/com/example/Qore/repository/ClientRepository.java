@@ -25,4 +25,11 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
     List<Client> findActiveClientsByRoleName(@Param("roleName") String roleName);
 
     boolean existsByDni(String dni);
+
+    @Query(value = "SELECT u.*, c.active, c.plan_id " +
+            "FROM users u " +
+            "INNER JOIN clients c ON u.id = c.id " +
+            "WHERE EXTRACT(MONTH FROM u.birthday) = :month",
+            nativeQuery = true)
+    List<Client> findClientsByBirthdayMonth(@Param("month") int month);
 }

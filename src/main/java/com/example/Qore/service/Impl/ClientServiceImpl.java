@@ -109,6 +109,14 @@ public class ClientServiceImpl implements ClientService {
         userRepository.save(user);
     }
 
+    @Override
+    public List<ClientResponseDTO> getClientsByBirthdayMonth(int month) {
+        List<Client> clients = userRepository.findClientsByBirthdayMonth(month);
+        return clients.stream()
+                .map(this::mapToDTO)
+                .toList();
+    }
+
     private ClientResponseDTO mapToDTO(Client user){
         return ClientResponseDTO.builder()
                 .id(user.getId())

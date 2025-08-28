@@ -11,6 +11,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @RestController
 @RequestMapping("/client")
 public class ClientController {
@@ -47,4 +50,16 @@ public class ClientController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/birthdays")
+    public ResponseEntity<List<ClientResponseDTO>> getClientsWithBirthdayInMonth(
+            @RequestParam(required = false) Integer month) {
+
+
+        if (month == null) {
+            month = LocalDate.now().getMonthValue();
+        }
+
+        List<ClientResponseDTO> clients = clientService.getClientsByBirthdayMonth(month);
+        return ResponseEntity.ok(clients);
+    }
 }
