@@ -6,6 +6,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
+import java.time.LocalDate;
+
 @Entity
 @Table(name="clients")
 @Data
@@ -17,8 +19,11 @@ public class Client extends User{
     @Column(nullable = false)
     private boolean active = true;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id")
     private Plan plan;
+    private LocalDate subscriptionStart;
+    private LocalDate subscriptionEnd;
 }
 
 

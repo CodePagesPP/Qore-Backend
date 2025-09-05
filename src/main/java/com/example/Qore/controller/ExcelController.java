@@ -3,7 +3,9 @@ package com.example.Qore.controller;
 import com.example.Qore.model.Client;
 import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.service.ExcelReportService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,5 +39,15 @@ public class ExcelController {
                 .headers(headers)
                 .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(new InputStreamResource(excelStream));
+    }
+
+    @GetMapping("/monthly-income")
+    public void downloadMonthlyIncome(HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=incomes.xlsx");
+
+        Workbook workbook = excelReportService.generateIncomeReport();
+        workbook.write(response.getOutputStream());
+        workbook.close();
     }
 }
