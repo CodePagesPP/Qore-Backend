@@ -31,9 +31,7 @@ public class AdminController {
     private final ClientService clientService;
 
     private final ManagerService managerService;
-
     private final UserRepository userRepository;
-    private final RoleService roleService;
 
     //Listar clientes
     @GetMapping("/clients")
@@ -87,14 +85,8 @@ public class AdminController {
         return ResponseEntity.ok(userService.updateWorker(dni, dto));
     }
 
-    @GetMapping("/profile")
-    public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
-        String username = userDetails.getUsername();
-        User user = userRepository.findByEmail(username)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        return ResponseEntity.ok(user);
-    }
+
 
     @GetMapping("/listPersonal")
     public ResponseEntity<Map<String, List<UserResponseDTO>>> listPersonal() {

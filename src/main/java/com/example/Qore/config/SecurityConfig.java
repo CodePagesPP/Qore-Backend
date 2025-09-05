@@ -1,5 +1,6 @@
 package com.example.Qore.config;
 
+import com.example.Qore.Exceptions.CustomAccessDeniedHandler;
 import com.example.Qore.auth.jwt.JwtAuthenticationFilter;
 import com.example.Qore.service.Impl.UserDetailsServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +40,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, CustomAccessDeniedHandler customAccessDeniedHandler) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .cors(withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**","/admin/registerClient").permitAll()
+                        .requestMatchers("/auth/login","/auth/registerAdmin","/admin/registerClient", "/payments/confirm","/payments-webhook/**").permitAll()
+                        .requestMatchers("/auth/profile").authenticated()
                         .requestMatchers("/admin/**",
                                          "/rol/**",
                                          "/rooms/**",
@@ -55,9 +57,10 @@ public class SecurityConfig {
                                          "/instructor/**",
                                          "/staff/**",
                                          "/manager/**",
-                                         "/disciplines/**",
                                          "/permission/**",
-                                "/client/**").hasAuthority("ADMIN_ACCESS")
+                                         "/client/**",
+                                         "/payments/**",
+                                         "/payments-webhook/**").hasAuthority("ADMIN_ACCESS")
                         .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
@@ -67,7 +70,10 @@ public class SecurityConfig {
                         .requestMatchers("/rol/**").hasAuthority("ROLE_ACCESS")
                         .requestMatchers("/class-sessions/**").hasAuthority("CLASS_SESSION_ACCESS")
                         .requestMatchers("/excel/**").hasAuthority("EXCEL_ACCESS")
+                        .requestMatchers("/payments/**").hasAuthority("PAYMENT_ACCESS")
                         .anyRequest().authenticated()
+                ).exceptionHandling(ex -> ex
+                        .accessDeniedHandler(customAccessDeniedHandler)
                 );
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

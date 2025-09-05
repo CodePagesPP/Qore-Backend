@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -104,9 +105,41 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             throw new IllegalStateException("Client is already enrolled in this class");
         }
 
+        // Validación de plan
+        if (client.getPlan() == null) {
+            throw new IllegalStateException("Client has no active plan");
+        }
+
+        LocalDate today = LocalDate.now();
+
+        // Si el plan venció o ya no tiene clases disponibles → requiere nuevo pack
+        boolean planVencido = client.getSubscriptionEnd() == null || client.getSubscriptionEnd().isBefore(today);
+        long clasesTomadas = repository.findByClients_Id(clientId).stream()
+                .filter(c -> !c.getStartDate().isBefore(client.getSubscriptionStart())
+                        && !c.getStartDate().isAfter(client.getSubscriptionEnd()))
+                .count();
+        boolean clasesAgotadas = clasesTomadas >= client.getPlan().getSessions();
+
+        if (planVencido || clasesAgotadas) {
+            throw new IllegalStateException("Client must purchase a new pack before enrolling in more classes");
+        }
+
+        // Activar vigencia desde la primera clase si aún no existe
+        if (client.getSubscriptionStart() == null) {
+            LocalDate start = classSession.getStartDate();
+            LocalDate end = start.plusDays(client.getPlan().getDuration());
+            client.setSubscriptionStart(start);
+            client.setSubscriptionEnd(end);
+            clientRepository.save(client);
+        }
+
+        //  Finalmente agregar al cliente
         classSession.getClients().add(client);
         repository.save(classSession);
     }
+
+
+
 
     @Override
     public void delete(Long id) {

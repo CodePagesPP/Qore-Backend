@@ -48,7 +48,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         return buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
-                "No se puede eliminar esta disciplina porque está asignada a uno o más instructores."
+                "Error de integridad de datos: " + ex.getMostSpecificCause().getMessage()
         );
     }
+
 }
