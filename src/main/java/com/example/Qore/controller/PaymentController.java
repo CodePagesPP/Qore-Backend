@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.YearMonth;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
@@ -34,10 +36,19 @@ public class PaymentController {
         return ResponseEntity.ok(Map.of("init_point", initPoint));
     }
 
-    @PostMapping("/confirm")
-    public ResponseEntity<String> confirmPayment(@RequestBody Map<String, Object> body) {
-        Long paymentId = Long.valueOf(body.get("paymentId").toString());
-        paymentProcessor.processPayment(paymentId);
-        return ResponseEntity.ok("confirmed");
+
+    @GetMapping("/current-month-income")
+    public ResponseEntity<Map<String, Object>> getCurrentMonthIncome() {
+        Double total = paymentService.getCurrentMonthIncome();
+        double goal = 5000.0;
+        double percentage = (total / goal) * 100;
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("month", YearMonth.now().toString());
+        response.put("total", total);
+        response.put("goal", goal);
+        response.put("percentage", percentage);
+
+        return ResponseEntity.ok(response);
     }
 }

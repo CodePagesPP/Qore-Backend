@@ -37,9 +37,9 @@ public class CheckoutServiceImpl implements CheckoutService {
             String externalRef = "type:one_time|client:" + client.getId() + "|plan:" + plan.getId();
 
             var backUrls = com.mercadopago.client.preference.PreferenceBackUrlsRequest.builder()
-                    .success("http://localhost:4200/payment-success")
-                    .pending("http://localhost:4200/payment-pending")
-                    .failure("http://localhost:4200/payment-failure")
+                    .success("https://as-mg-proper-photographic.trycloudflare.com/payment-success")
+                    .pending("https://as-mg-proper-photographic.trycloudflare.com/payment-pending")
+                    .failure("https://as-mg-proper-photographic.trycloudflare.com/payment-failure")
                     .build();
 
             var prefReq = com.mercadopago.client.preference.PreferenceRequest.builder()
@@ -52,13 +52,13 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .externalReference(externalRef)
                     .notificationUrl(notificationUrl)
                     .backUrls(backUrls)
-                    //.autoReturn("approved")
+                    //.autoReturn("approved") descomentar al despliegue
                     .build();
 
             var prefClient = new com.mercadopago.client.preference.PreferenceClient();
             var preference = prefClient.create(prefReq);
 
-            return preference.getInitPoint();
+            return preference.getSandboxInitPoint();
 
         } catch (com.mercadopago.exceptions.MPApiException e) {
             System.err.println("Error de MPApiException: " + e.getApiResponse().getContent());

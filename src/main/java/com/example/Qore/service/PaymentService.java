@@ -9,4 +9,5 @@ public interface PaymentService {
     PaymentDTO simulatePayment(Long clientId, Long planId);
     Map<YearMonth, Double> getMonthlyIncomes();
     Map<String, Double> getWeeklyIncomes();
+    public Double getCurrentMonthIncome();
 }

@@ -46,7 +46,7 @@ public class SecurityConfig {
                 .cors(withDefaults())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login","/auth/registerAdmin","/admin/registerClient", "/payments/confirm","/payments-webhook/**").permitAll()
+                        .requestMatchers("/auth/login","/auth/registerAdmin","/admin/registerClient","/payments-webhook/**").permitAll()
                         .requestMatchers("/auth/profile").authenticated()
                         .requestMatchers("/admin/**",
                                          "/rol/**",
@@ -59,9 +59,9 @@ public class SecurityConfig {
                                          "/manager/**",
                                          "/permission/**",
                                          "/client/**",
-                                         "/payments/**",
-                                         "/payments-webhook/**").hasAuthority("ADMIN_ACCESS")
-                        .requestMatchers("/client/**").hasAuthority("CLIENT_ACCESS")
+                                         "/payments/current-month-income").hasAuthority("ADMIN_ACCESS")
+                        .requestMatchers("/client/**",
+                                         "/payments/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
                         .requestMatchers("/manager/**", "/disciplines/**").hasAuthority("MANAGER_ACCESS")
