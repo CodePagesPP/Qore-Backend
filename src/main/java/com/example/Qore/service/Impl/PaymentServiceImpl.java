@@ -113,4 +113,12 @@ public class PaymentServiceImpl implements PaymentService {
         return result;
     }
 
+
+    public Double getCurrentMonthIncome() {
+        YearMonth currentMonth = YearMonth.now();
+
+        return paymentRepository.findAllByStatus("approved").stream()
+                .filter(p -> YearMonth.from(p.getPaymentDate()).equals(currentMonth))
+                .collect(Collectors.summingDouble(Payment::getAmount));
+    }
 }
