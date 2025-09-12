@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -144,5 +145,16 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     @Override
     public void delete(Long id) {
         repository.deleteById(id);
+    }
+
+
+
+    public long getCurrentWeekClasses() {
+        LocalDate now = LocalDate.now();
+
+        LocalDate startOfWeek = now.with(DayOfWeek.MONDAY);
+        LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
+
+        return repository.countClassesBetween(startOfWeek, endOfWeek);
     }
 }

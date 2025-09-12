@@ -40,7 +40,7 @@ public class PaymentController {
     @GetMapping("/current-month-income")
     public ResponseEntity<Map<String, Object>> getCurrentMonthIncome() {
         Double total = paymentService.getCurrentMonthIncome();
-        double goal = 5000.0;
+        double goal = 10000.0;
         double percentage = (total / goal) * 100;
 
         Map<String, Object> response = new HashMap<>();

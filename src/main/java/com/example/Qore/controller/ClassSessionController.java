@@ -7,7 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/class-sessions")
@@ -46,5 +48,14 @@ public class ClassSessionController {
     public ResponseEntity<String> addClientToClass(@PathVariable Long classId, @PathVariable Long clientId) {
         service.addClientToClass(classId, clientId);
         return ResponseEntity.ok("Client added to class successfully");
+    }
+
+    @GetMapping("/weekly-count")
+    public ResponseEntity<Map<String, Long>> getWeeklyClassCount() {
+        long count = service.getCurrentWeekClasses();
+        Map<String, Long> response = new HashMap<>();
+        response.put("weeklyCount", count);
+
+        return ResponseEntity.ok(response);
     }
 }

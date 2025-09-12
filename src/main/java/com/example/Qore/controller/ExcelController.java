@@ -44,7 +44,7 @@ public class ExcelController {
     @GetMapping("/monthly-income")
     public void downloadMonthlyIncome(HttpServletResponse response) throws IOException {
         response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        response.setHeader("Content-Disposition", "attachment; filename=incomes.xlsx");
+        response.setHeader("Content-Disposition", "attachment; filename=REPORTE_MENSUAL.xlsx");
 
         Workbook workbook = excelReportService.generateIncomeReport();
         workbook.write(response.getOutputStream());
