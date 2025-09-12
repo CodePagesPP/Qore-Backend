@@ -10,6 +10,8 @@ public interface UserService {
     UserDTO updateAdmin(long id, AdminDTO admin);
     void deleteAdmin(long id);
     List<UserResponseDTO> getAllNonClients();
+    UserResponseDTO getUserById(long id);
     UserResponseDTO registerWorker(UserRegisterDTO dto);
+    void deleteWorker(long id);
     UserResponseDTO updateWorker(String dni, UserUpdateDTO dto);
 }

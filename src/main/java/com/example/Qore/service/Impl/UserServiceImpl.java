@@ -84,6 +84,12 @@ private final RoleRepository roleRepository;
     }
 
     @Override
+    public void deleteWorker(long id) {
+        User user = userRepository2.findUserById(id).orElseThrow(() -> new EntityNotFoundException("User with this id does not exist"));
+        userRepository2.delete(user);
+    }
+
+    @Override
     public UserResponseDTO updateWorker(String dni, UserUpdateDTO user) {
         User userFound = userRepository2.findWorkerByDni(dni)
                 .orElseThrow(() -> new EntityNotFoundException("Worker not found or is not a worker"));
@@ -168,6 +174,13 @@ private final RoleRepository roleRepository;
                     return builder.build();
                 })
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserResponseDTO getUserById(long id) {
+        User user = userRepository2.findUserById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User not found or is not a USER"));
+        return mapToDTO(user);
     }
 
 

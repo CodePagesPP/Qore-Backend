@@ -6,13 +6,9 @@ import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import javax.management.relation.Role;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -80,13 +76,21 @@ public class AdminController {
         return ResponseEntity.ok(userService.registerWorker(dto));
     }
 
+    @DeleteMapping("/deleteWorker/{id}")
+    public ResponseEntity<UserResponseDTO> deleteWorker(@PathVariable("id") Long id){
+        userService.deleteWorker(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/updateWorker/{dni}")
     public ResponseEntity<UserResponseDTO> updateWorker(@PathVariable("dni") String dni ,@RequestBody UserUpdateDTO dto) {
         return ResponseEntity.ok(userService.updateWorker(dni, dto));
     }
 
-
-
+    @GetMapping("/moreInfo/{id}")
+    public ResponseEntity<UserResponseDTO> getMoreInfoById(@PathVariable("id") Long id) {
+        return ResponseEntity.ok(userService.getUserById(id));
+    }
 
     @GetMapping("/listPersonal")
     public ResponseEntity<Map<String, List<UserResponseDTO>>> listPersonal() {
