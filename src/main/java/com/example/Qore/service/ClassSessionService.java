@@ -12,4 +12,5 @@ public interface ClassSessionService {
     ClassSessionDTO update(Long id, ClassSessionUpdateDTO dto);
     void delete(Long id);
     void addClientToClass(Long classId, Long clientId);
+    long getCurrentWeekClasses();
 }
