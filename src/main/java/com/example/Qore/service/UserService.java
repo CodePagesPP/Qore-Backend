@@ -14,4 +14,5 @@ public interface UserService {
     UserResponseDTO registerWorker(UserRegisterDTO dto);
     void deleteWorker(long id);
     UserResponseDTO updateWorker(String dni, UserUpdateDTO dto);
+    long countUsersNotAdminOrClient();
 }

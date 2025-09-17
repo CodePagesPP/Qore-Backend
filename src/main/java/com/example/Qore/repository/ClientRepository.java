@@ -5,6 +5,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +28,16 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
 
     boolean existsByDni(String dni);
 
-    @Query("SELECT c FROM Client c WHERE EXTRACT(MONTH FROM c.birthday) = :month")
-    List<Client> findClientsByBirthdayMonth(@Param("month") int month);
+    List<Client> findBySubscriptionEndIsNotNull();
+
+
+    @Query("SELECT c FROM Client c WHERE MONTH(c.createdAt) = :month AND YEAR(c.createdAt) = :year")
+    List<Client> findClientsRegisteredInMonth(@Param("month") int month, @Param("year") int year);
+
+
+    @Query("SELECT YEAR(c.createdAt) as year, MONTH(c.createdAt) as month, COUNT(c) as total " +
+            "FROM Client c GROUP BY YEAR(c.createdAt), MONTH(c.createdAt) ORDER BY year DESC, month DESC")
+    List<Object[]> countClientsByMonth();
+
+    List<Client> findBySubscriptionEndBefore(LocalDate date);
 }

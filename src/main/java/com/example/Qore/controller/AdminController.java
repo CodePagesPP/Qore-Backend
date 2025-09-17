@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,4 +103,15 @@ public class AdminController {
 
         return ResponseEntity.ok(grouped);
     }
+
+    @GetMapping("/count-non-admin-client")
+    public ResponseEntity<Map<String, Long>> countUsersNotAdminOrClient() {
+        long count = userService.countUsersNotAdminOrClient();
+
+        Map<String, Long> response = new HashMap<>();
+        response.put("workers", count);
+
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -183,6 +183,11 @@ private final RoleRepository roleRepository;
         return mapToDTO(user);
     }
 
+    @Override
+    public long countUsersNotAdminOrClient() {
+        return userRepository2.countUsersNotAdminOrClient();
+    }
+
 
     private UserDTO mapToDTO(Admin user){
         return UserDTO.builder()

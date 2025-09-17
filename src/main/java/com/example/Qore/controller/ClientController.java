@@ -1,7 +1,7 @@
 package com.example.Qore.controller;
 
-import com.example.Qore.DTO.ClientResponseDTO;
-import com.example.Qore.DTO.ClientUpdateDTO;
+import com.example.Qore.DTO.*;
+import com.example.Qore.model.Client;
 import com.example.Qore.model.User;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.ClientService;
@@ -12,7 +12,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/client")
@@ -51,15 +53,45 @@ public class ClientController {
     }
 
     @GetMapping("/birthdays")
-    public ResponseEntity<List<ClientResponseDTO>> getClientsWithBirthdayInMonth(
-            @RequestParam(required = false) Integer month) {
-
-
-        if (month == null) {
-            month = LocalDate.now().getMonthValue();
-        }
-
-        List<ClientResponseDTO> clients = clientService.getClientsByBirthdayMonth(month);
+    public ResponseEntity<List<ClientResponseDTO>> getClientsWithBirthdayInNextWeek() {
+        List<ClientResponseDTO> clients = clientService.getClientsWithBirthdayInNextWeek();
         return ResponseEntity.ok(clients);
+    }
+
+    @GetMapping("/subscriptions/ending-soon")
+    public ResponseEntity<List<ClientEndingSoon>> getClientsWithSubscriptionEndingSoon() {
+        List<ClientEndingSoon> clients = clientService.getClientsWithSubscriptionEndingSoon();
+        return ResponseEntity.ok(clients);
+    }
+
+    // Lista clientes del mes actual si no pasas parámetros
+    @GetMapping("/registered")
+    public ResponseEntity<List<ClientRegisterNewDTO>> getClientsRegisteredInMonth(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
+        return ResponseEntity.ok(clientService.getClientsRegisteredInMonth(month, year));
+    }
+
+
+    // Estadísticas de registros por mes
+    @GetMapping("/registrations/stats")
+    public ResponseEntity<List<ClientRegistrationStats>> getClientRegistrationsByMonth() {
+        List<ClientRegistrationStats> stats = clientService.getClientRegistrationsByMonth();
+        return ResponseEntity.ok(stats);
+    }
+
+    @GetMapping("/subscription-ended-2months")
+    public ResponseEntity<List<ClientSubscriptionEndedDTO>> getClientsWithSubscriptionEndedMoreThanTwoMonths() {
+        List<ClientSubscriptionEndedDTO> clients = clientService.getClientsWithSubscriptionEndedMoreThanTwoMonths();
+        return ResponseEntity.ok(clients);
+    }
+
+
+    @GetMapping("/subscription-ended-2months/count")
+    public ResponseEntity<Map<String, Long>> countClientsWithSubscriptionEndedMoreThanTwoMonths() {
+        long count = clientService.countClientsWithSubscriptionEndedMoreThanTwoMonths();
+        Map<String, Long> response = new HashMap<>();
+        response.put("countSubscriptionEnded", count);
+        return ResponseEntity.ok(response);
     }
 }

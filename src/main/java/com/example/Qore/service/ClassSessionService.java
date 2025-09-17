@@ -2,6 +2,7 @@ package com.example.Qore.service;
 
 import com.example.Qore.DTO.ClassSessionDTO;
 import com.example.Qore.DTO.ClassSessionUpdateDTO;
+import com.example.Qore.model.Client;
 
 import java.util.List;
 
@@ -13,4 +14,5 @@ public interface ClassSessionService {
     void delete(Long id);
     void addClientToClass(Long classId, Long clientId);
     long getCurrentWeekClasses();
+    long countClassesTaken(Client client);
 }
