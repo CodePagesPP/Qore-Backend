@@ -18,4 +18,15 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
             "WHERE c.startDate BETWEEN :start AND :end")
     long countClassesBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
 
+    @Query("""
+           SELECT COUNT(cs)
+           FROM ClassSession cs
+           JOIN cs.clients c
+           WHERE c.id = :clientId
+             AND cs.startDate >= :start
+             AND cs.startDate <= :end
+           """)
+    long countClassesByClientAndPeriod(@Param("clientId") Long clientId,
+                                       @Param("start") LocalDate start,
+                                       @Param("end") LocalDate end);
 }

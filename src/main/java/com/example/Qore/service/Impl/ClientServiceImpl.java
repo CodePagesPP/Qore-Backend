@@ -1,10 +1,9 @@
 package com.example.Qore.service.Impl;
 
-import com.example.Qore.DTO.ClientRegisterDTO;
-import com.example.Qore.DTO.ClientResponseDTO;
-import com.example.Qore.DTO.ClientUpdateDTO;
+import com.example.Qore.DTO.*;
 import com.example.Qore.model.Client;
 import com.example.Qore.model.RoleE;
+import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.ClientService;
@@ -14,7 +13,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,7 +26,7 @@ public class ClientServiceImpl implements ClientService {
     private final ClientRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
-
+    private final ClassSessionRepository classRepository;
     @Override
     public ClientResponseDTO registerClient(ClientRegisterDTO dto) {
 
@@ -110,11 +112,102 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<ClientResponseDTO> getClientsByBirthdayMonth(int month) {
-        List<Client> clients = userRepository.findClientsByBirthdayMonth(month);
+    public List<ClientResponseDTO> getClientsWithBirthdayInNextWeek() {
+        LocalDate today = LocalDate.now();
+
+        List<Client> clients = userRepository.findAll();
+
         return clients.stream()
+                .filter(c -> {
+                    LocalDate birthday = c.getBirthday(); // asume LocalDate
+                    if (birthday == null) return false;
+
+                    // cumpleaños para este año
+                    LocalDate nextBirthday = birthday.withYear(today.getYear());
+
+                    // si ya pasó este año, usar el próximo año
+                    if (nextBirthday.isBefore(today) || nextBirthday.isEqual(today)) {
+                        nextBirthday = birthday.withYear(today.getYear() + 1);
+                    }
+
+                    long daysBetween = ChronoUnit.DAYS.between(today, nextBirthday);
+                    return daysBetween >= 0 && daysBetween <= 7; // dentro de 7 días
+                })
                 .map(this::mapToDTO)
                 .toList();
+    }
+
+    @Override
+    public List<ClientEndingSoon> getClientsWithSubscriptionEndingSoon() {
+        LocalDate today = LocalDate.now();
+
+        List<Client> clients = userRepository.findBySubscriptionEndIsNotNull();
+
+        return clients.stream()
+                .filter(c -> {
+                    LocalDate endDate = c.getSubscriptionEnd();
+                    if (endDate == null) return false;
+                    long daysBetween = ChronoUnit.DAYS.between(today, endDate);
+                    return daysBetween >= 0 && daysBetween <= 7;
+                })
+                .map(this::mapToDTOEnding)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ClientRegisterNewDTO> getClientsRegisteredInMonth(Integer month, Integer year) {
+        LocalDate today = LocalDate.now();
+        if (month == null) month = today.getMonthValue();
+        if (year == null) year = today.getYear();
+
+        return userRepository.findClientsRegisteredInMonth(month, year)
+                .stream()
+                .map(c -> ClientRegisterNewDTO.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .lastName(c.getLastName())
+                        .email(c.getEmail())
+                        .phoneNumber(c.getPhoneNumber())
+                        .createdAt(c.getCreatedAt())
+                        .build())
+                .toList();
+    }
+
+
+    @Override
+    public List<ClientRegistrationStats> getClientRegistrationsByMonth() {
+        List<Object[]> results = userRepository.countClientsByMonth();
+        List<ClientRegistrationStats> stats = new ArrayList<>();
+
+        for (Object[] row : results) {
+            int year = ((Number) row[0]).intValue();
+            int month = ((Number) row[1]).intValue();
+            long total = ((Number) row[2]).longValue();
+
+            stats.add(new ClientRegistrationStats(year, month, total));
+        }
+        return stats;
+    }
+
+    public List<ClientSubscriptionEndedDTO> getClientsWithSubscriptionEndedMoreThanTwoMonths() {
+        LocalDate twoMonthsAgo = LocalDate.now().minusMonths(2);
+
+        return userRepository.findBySubscriptionEndBefore(twoMonthsAgo)
+                .stream()
+                .map(c -> ClientSubscriptionEndedDTO.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .lastName(c.getLastName())
+                        .email(c.getEmail())
+                        .phoneNumber(c.getPhoneNumber())
+                        .subscriptionEnd(c.getSubscriptionEnd())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    public long countClientsWithSubscriptionEndedMoreThanTwoMonths() {
+        return getClientsWithSubscriptionEndedMoreThanTwoMonths().size();
     }
 
     private ClientResponseDTO mapToDTO(Client user){
@@ -133,6 +226,34 @@ public class ClientServiceImpl implements ClientService {
                 .address(user.getAddress())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
+    private ClientEndingSoon mapToDTOEnding(Client client) {
+        long totalClasses = client.getPlan() != null ? client.getPlan().getSessions() : 0;
+
+        long classesTaken = 0;
+        if (client.getSubscriptionStart() != null && client.getSubscriptionEnd() != null) {
+            classesTaken = classRepository.countClassesByClientAndPeriod(
+                    client.getId(),
+                    client.getSubscriptionStart(),
+                    client.getSubscriptionEnd()
+            );
+        }
+
+        long classesRemaining = totalClasses - classesTaken;
+        if (classesRemaining < 0) classesRemaining = 0;
+
+        return ClientEndingSoon.builder()
+                .id(client.getId())
+                .name(client.getName())
+                .lastName(client.getLastName())
+                .phoneNumber(client.getPhoneNumber())
+                .email(client.getEmail())
+                .subscriptionEnd(client.getSubscriptionEnd())
+                .totalClasses(totalClasses)
+                .classesTaken(classesTaken)
+                .classesRemaining(classesRemaining)
                 .build();
     }
 }

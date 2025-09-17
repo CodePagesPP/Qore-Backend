@@ -24,5 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
     Optional<User> findByEmail(String email);
     @Query("SELECT u FROM User u WHERE u.role.name <> 'CLIENT'")
     List<User> findAllNonClients();
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.role.name NOT IN ('ADMIN', 'CLIENT')")
+    long countUsersNotAdminOrClient();
 }
 

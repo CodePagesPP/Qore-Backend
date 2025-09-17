@@ -90,7 +90,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         return mapper.toDTO(repository.save(existing));
     }
 
-
+    @Override
     public void addClientToClass(Long classId, Long clientId) {
         ClassSession classSession = repository.findById(classId)
                 .orElseThrow(() -> new EntityNotFoundException("Class not found"));
@@ -106,39 +106,46 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             throw new IllegalStateException("Client is already enrolled in this class");
         }
 
-        // Validación de plan
         if (client.getPlan() == null) {
             throw new IllegalStateException("Client has no active plan");
         }
 
-        LocalDate today = LocalDate.now();
-
-        // Si el plan venció o ya no tiene clases disponibles → requiere nuevo pack
-        boolean planVencido = client.getSubscriptionEnd() == null || client.getSubscriptionEnd().isBefore(today);
-        long clasesTomadas = repository.findByClients_Id(clientId).stream()
-                .filter(c -> !c.getStartDate().isBefore(client.getSubscriptionStart())
-                        && !c.getStartDate().isAfter(client.getSubscriptionEnd()))
-                .count();
-        boolean clasesAgotadas = clasesTomadas >= client.getPlan().getSessions();
-
-        if (planVencido || clasesAgotadas) {
+        if (isPlanExpired(client) || isClassesExhausted(client)) {
             throw new IllegalStateException("Client must purchase a new pack before enrolling in more classes");
         }
 
-        // Activar vigencia desde la primera clase si aún no existe
+        ensureSubscriptionDates(client, classSession.getStartDate());
+
+        classSession.getClients().add(client);
+        repository.save(classSession);
+    }
+
+    private boolean isPlanExpired(Client client) {
+        LocalDate today = LocalDate.now();
+        return client.getSubscriptionEnd() == null || client.getSubscriptionEnd().isBefore(today);
+    }
+
+    private boolean isClassesExhausted(Client client) {
+        long clasesTomadas = countClassesTaken(client);
+        return clasesTomadas >= client.getPlan().getSessions();
+    }
+
+    @Override
+    public long countClassesTaken(Client client) {
+        return repository.findByClients_Id(client.getId()).stream()
+                .filter(c -> !c.getStartDate().isBefore(client.getSubscriptionStart())
+                        && !c.getStartDate().isAfter(client.getSubscriptionEnd()))
+                .count();
+    }
+
+    private void ensureSubscriptionDates(Client client, LocalDate start) {
         if (client.getSubscriptionStart() == null) {
-            LocalDate start = classSession.getStartDate();
             LocalDate end = start.plusDays(client.getPlan().getDuration());
             client.setSubscriptionStart(start);
             client.setSubscriptionEnd(end);
             clientRepository.save(client);
         }
-
-        //  Finalmente agregar al cliente
-        classSession.getClients().add(client);
-        repository.save(classSession);
     }
-
 
 
 
