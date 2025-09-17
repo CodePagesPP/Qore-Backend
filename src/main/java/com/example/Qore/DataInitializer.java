@@ -45,8 +45,8 @@ public class DataInitializer implements CommandLineRunner {
         //CREACION DE PLANES
         if (planRepository.count() == 0) {
             Plan plan1 = Plan.builder()
-                    .name("PACK DE 4 CLASES")
-                    .description("Acceso a 4 sesiones al mes")
+                    .name("Pack de 4 Clases")
+                    .description("Acceso a 4 sesiones al mes.")
                     .sessions(4)
                     .payMethod("mercado_pago")
                     .duration(30)
@@ -57,8 +57,8 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             Plan plan2 = Plan.builder()
-                    .name("PACK DE 8 CLASES")
-                    .description("Acceso a 8 sesiones al mes")
+                    .name("Pack de 8 Clases")
+                    .description("Acceso a 8 sesiones al mes.")
                     .sessions(8)
                     .payMethod("mercado_pago")
                     .duration(30)
@@ -69,9 +69,9 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             Plan plan3 = Plan.builder()
-                    .name("PACK DE 12 CLASES")
-                    .description("Acceso a 12 sesiones al mes")
-                    .sessions(999)
+                    .name("Pack de 12 Clases")
+                    .description("Acceso a 12 sesiones al mes.")
+                    .sessions(12)
                     .payMethod("mercado_pago")
                     .duration(30)
                     .price(450.0f)
@@ -81,8 +81,8 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
 
             Plan plan4 = Plan.builder()
-                    .name("CLASE SUELTA")
-                    .description("Acceso a una sola clase")
+                    .name("Clase Suelta")
+                    .description("Acceso a una sola clase.")
                     .sessions(1)
                     .payMethod("mercado_pago")
                     .duration(1)
@@ -92,7 +92,43 @@ public class DataInitializer implements CommandLineRunner {
                     .reprograms(0)
                     .build();
 
-            planRepository.saveAll(List.of(plan1, plan2, plan3, plan4));
+            Plan plan5 = Plan.builder()
+                    .name("Clase Suelta Privada")
+                    .description("Acceso a una sola clase privada.")
+                    .sessions(1)
+                    .payMethod("mercado_pago")
+                    .duration(1)
+                    .price(60.0f)
+                    .sellType("one_time")
+                    .active(true)
+                    .reprograms(0)
+                    .build();
+
+            Plan plan6 = Plan.builder()
+                    .name("Pack de 4 Clases Privadas")
+                    .description("Acceso a 4 clases privadas.")
+                    .sessions(1)
+                    .payMethod("mercado_pago")
+                    .duration(1)
+                    .price(60.0f)
+                    .sellType("one_time")
+                    .active(true)
+                    .reprograms(0)
+                    .build();
+
+            Plan plan7 = Plan.builder()
+                    .name("Pack Mixto")
+                    .description("Acceso a 4 clases grupales\nAcceso a 4 clases privadas.")
+                    .sessions(1)
+                    .payMethod("mercado_pago")
+                    .duration(1)
+                    .price(60.0f)
+                    .sellType("one_time")
+                    .active(true)
+                    .reprograms(0)
+                    .build();
+
+            planRepository.saveAll(List.of(plan1, plan2, plan3, plan4, plan5, plan6, plan7));
         }
     }
 
