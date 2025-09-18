@@ -23,4 +23,5 @@ public interface ClientService {
 
     List<ClientSubscriptionEndedDTO> getClientsWithSubscriptionEndedMoreThanTwoMonths();
     long countClientsWithSubscriptionEndedMoreThanTwoMonths();
+    ClientPlanInfoDTO getClientPlanInfo(Long clientId);
 }

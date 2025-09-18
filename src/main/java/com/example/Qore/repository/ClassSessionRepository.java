@@ -29,4 +29,13 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
     long countClassesByClientAndPeriod(@Param("clientId") Long clientId,
                                        @Param("start") LocalDate start,
                                        @Param("end") LocalDate end);
+
+    @Query("""
+    SELECT cs FROM ClassSession cs
+    JOIN cs.clients c
+    WHERE c.id = :clientId
+    ORDER BY cs.startDate ASC, cs.startTime ASC
+""")
+    List<ClassSession> findAllByClientId(@Param("clientId") Long clientId);
+
 }

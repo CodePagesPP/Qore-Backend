@@ -2,6 +2,7 @@ package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.ClassSessionDTO;
 import com.example.Qore.DTO.ClassSessionUpdateDTO;
+import com.example.Qore.DTO.ClientClassDTO;
 import com.example.Qore.Mapper.ClassSessionMapper;
 import com.example.Qore.model.*;
 import com.example.Qore.repository.*;
@@ -163,5 +164,20 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         LocalDate endOfWeek = now.with(DayOfWeek.SUNDAY);
 
         return repository.countClassesBetween(startOfWeek, endOfWeek);
+    }
+
+    @Override
+    public List<ClientClassDTO> getClientClasses(Long clientId) {
+        List<ClassSession> sessions = repository.findAllByClientId(clientId);
+
+        return sessions.stream().map(cs -> ClientClassDTO.builder()
+                .id(cs.getId())
+                .name(cs.getName())
+                .room(cs.getRoom().getName())
+                .instructorName(cs.getInstructor().getName())
+                .startDate(cs.getStartDate())
+                .startTime(cs.getStartTime())
+                .endTime(cs.getEndTime())
+                .build()).toList();
     }
 }
