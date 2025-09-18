@@ -38,4 +38,9 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
 """)
     List<ClassSession> findAllByClientId(@Param("clientId") Long clientId);
 
+    List<ClassSession> findByInstructorIdAndStartDateBetween(
+            Long instructorId,
+            LocalDate startDate,
+            LocalDate endDate
+    );
 }
