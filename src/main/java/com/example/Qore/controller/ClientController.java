@@ -3,7 +3,9 @@ package com.example.Qore.controller;
 import com.example.Qore.DTO.*;
 import com.example.Qore.model.Client;
 import com.example.Qore.model.User;
+import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.UserRepository;
+import com.example.Qore.service.ClassSessionService;
 import com.example.Qore.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +27,8 @@ public class ClientController {
 
     @Autowired
     private ClientService clientService;
-
+    @Autowired
+    private ClassSessionService classSessionService;
 
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
@@ -93,5 +96,25 @@ public class ClientController {
         Map<String, Long> response = new HashMap<>();
         response.put("countSubscriptionEnded", count);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/plan-info")
+    public ResponseEntity<ClientPlanInfoDTO> getClientPlanInfo(@PathVariable Long id) {
+        ClientPlanInfoDTO dto = clientService.getClientPlanInfo(id);
+        return ResponseEntity.ok(dto);
+    }
+
+
+    @GetMapping("/classes")
+    public ResponseEntity<List<ClientClassDTO>> getMyClasses(@AuthenticationPrincipal UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        if (!(user instanceof Client client)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        List<ClientClassDTO> classes = classSessionService.getClientClasses(client.getId());
+        return ResponseEntity.ok(classes);
     }
 }

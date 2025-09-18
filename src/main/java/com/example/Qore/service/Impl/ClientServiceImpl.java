@@ -210,6 +210,29 @@ public class ClientServiceImpl implements ClientService {
         return getClientsWithSubscriptionEndedMoreThanTwoMonths().size();
     }
 
+    @Override
+    public ClientPlanInfoDTO getClientPlanInfo(Long clientId) {
+        Client client = userRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        ClientEndingSoon dto = mapToDTOEnding(client);
+
+        return ClientPlanInfoDTO.builder()
+                .id(dto.getId())
+                .name(dto.getName())
+                .lastName(dto.getLastName())
+                .email(dto.getEmail())
+                .dni(dto.getDni())
+                .phoneNumber(dto.getPhoneNumber())
+                .planName(client.getPlan() != null ? client.getPlan().getName() : "No cuentas con plan")
+                .subscriptionEnd(dto.getSubscriptionEnd())
+                .totalClasses(dto.getTotalClasses())
+                .classesTaken(dto.getClassesTaken())
+                .classesRemaining(dto.getClassesRemaining())
+                .build();
+    }
+
+
     private ClientResponseDTO mapToDTO(Client user){
         return ClientResponseDTO.builder()
                 .id(user.getId())
@@ -250,6 +273,7 @@ public class ClientServiceImpl implements ClientService {
                 .lastName(client.getLastName())
                 .phoneNumber(client.getPhoneNumber())
                 .email(client.getEmail())
+                .dni(client.getDni())
                 .subscriptionEnd(client.getSubscriptionEnd())
                 .totalClasses(totalClasses)
                 .classesTaken(classesTaken)

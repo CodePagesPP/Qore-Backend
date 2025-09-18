@@ -48,20 +48,19 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login","/auth/registerAdmin","/admin/registerClient","/payments-webhook/**","/plans/listPlans").permitAll()
                         .requestMatchers("/auth/profile").authenticated()
+                        .requestMatchers("/client/**").hasAnyAuthority("ADMIN_ACCESS", "CLIENT_ACCESS")
+                        .requestMatchers("/instructor/**").hasAnyAuthority("ADMIN_ACCESS", "INSTRUCTOR_ACCESS")
                         .requestMatchers("/admin/**",
                                          "/rol/**",
                                          "/rooms/**",
                                          "/disciplines/**",
                                          "/class-sessions/**",
                                          "/excel/**",
-                                         "/instructor/**",
                                          "/staff/**",
                                          "/manager/**",
                                          "/permission/**",
-                                         "/client/**",
                                          "/payments/current-month-income").hasAuthority("ADMIN_ACCESS")
-                        .requestMatchers("/client/**",
-                                         "/payments/**").hasAuthority("CLIENT_ACCESS")
+                        .requestMatchers("/payments/**").hasAuthority("CLIENT_ACCESS")
                         .requestMatchers("/instructor/**", "/rooms/**").hasAuthority("INSTRUCTOR_ACCESS")
                         .requestMatchers("/staff/**").hasAuthority("STAFF_ACCESS")
                         .requestMatchers("/manager/**", "/disciplines/**").hasAuthority("MANAGER_ACCESS")
