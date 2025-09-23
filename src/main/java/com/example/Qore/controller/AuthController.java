@@ -36,6 +36,7 @@ public class AuthController {
 
         UserProfileDTO dto = UserProfileDTO.builder()
                 .id(user.getId())
+                .dni(user.getDni())
                 .email(user.getEmail())
                 .name(user.getName())
                 .lastName(user.getLastName())

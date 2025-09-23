@@ -98,7 +98,7 @@ public class ClientServiceImpl implements ClientService {
         if (dto.getCity() != null) user.setCity(dto.getCity());
         if (dto.getAddress() != null) user.setAddress(dto.getAddress());
         if (dto.getDni() != null) user.setDni(dto.getDni());
-
+        user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
         return mapToDTO(userRepository.save(user));
     }
 

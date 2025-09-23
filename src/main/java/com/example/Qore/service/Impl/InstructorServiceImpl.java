@@ -104,6 +104,13 @@ public class InstructorServiceImpl implements InstructorService {
         instructorRepository.delete(instructorFound);
     }
 
+    @Override
+    public InstructorResponseDTO getInstructorByDni(String dni) {
+        Instructor instructor = instructorRepository.findInstructorByDni(dni)
+                .orElseThrow(() -> new EntityNotFoundException("Instructor not found or is not an Instructor"));
+        return mapToDTO(instructor);
+    }
+
     public InstructorStatsDTO getInstructorStats(Long instructorId, Integer month, Integer year) {
         Instructor instructor = (Instructor) instructorRepository.findById(instructorId)
                 .orElseThrow(() -> new RuntimeException("Instructor no encontrado"));

@@ -1,5 +1,6 @@
 package com.example.Qore.controller;
 
+import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorStatsDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
@@ -31,6 +32,11 @@ public class InstructorController {
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/instructor/{dni}")
+    public ResponseEntity<InstructorResponseDTO> getInstructor(@PathVariable String dni) {
+        return ResponseEntity.ok(instructorService.getInstructorByDni(dni));
     }
 
      @GetMapping("/listInstructor")
