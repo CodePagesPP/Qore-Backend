@@ -6,6 +6,7 @@ import com.example.Qore.DTO.InstructorStatsDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
 import com.example.Qore.model.ClassSession;
 import com.example.Qore.model.Discipline;
+import com.example.Qore.model.Enum.EstadoSession;
 import com.example.Qore.model.Instructor;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.ClassSessionRepository;
@@ -121,6 +122,11 @@ public class InstructorServiceImpl implements InstructorService {
 
         int totalClasses = sessions.size();
 
+        //  Contar clases pendientes
+        long pendingClasses = classSessionRepository.countByInstructorIdAndStartDateBetweenAndEstado(
+                instructorId, start, end, EstadoSession.PENDIENTE);
+
+
         // Contar alumnos únicos en todas las clases del mes
         Set<Long> studentIds = new HashSet<>();
         for (ClassSession s : sessions) {
@@ -137,8 +143,10 @@ public class InstructorServiceImpl implements InstructorService {
                 .phoneNumber(instructor.getPhoneNumber())
                 .totalClassesThisMonth(totalClasses)
                 .totalStudentsThisMonth(totalStudents)
+                .pendingClassesThisMonth((int) pendingClasses) // nuevo campo
                 .build();
     }
+
 
     private InstructorResponseDTO mapToDTO(Instructor instructor){
 

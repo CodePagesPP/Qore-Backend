@@ -5,6 +5,7 @@ import com.example.Qore.DTO.ClassSessionUpdateDTO;
 import com.example.Qore.DTO.ClientClassDTO;
 import com.example.Qore.Mapper.ClassSessionMapper;
 import com.example.Qore.model.*;
+import com.example.Qore.model.Enum.EstadoSession;
 import com.example.Qore.repository.*;
 import com.example.Qore.service.ClassSessionService;
 import jakarta.persistence.EntityNotFoundException;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,7 +44,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     }
 
     @Override
-    public ClassSessionDTO create(ClassSessionDTO dto) {
+    public List<ClassSessionDTO> create(ClassSessionDTO dto) {
         Discipline discipline = disciplineRepository.findById(dto.getDisciplineId())
                 .orElseThrow(() -> new RuntimeException("Discipline not found"));
         Instructor instructor = instructorRepository.findById(dto.getInstructorId())
@@ -50,15 +52,62 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (!instructor.getDiscipline().contains(discipline)) {
-            throw new RuntimeException("Instructor does not belong to the given discipline");
+        Set<Client> clients = new HashSet<>();
+        List<ClassSessionDTO> createdSessions = new ArrayList<>();
+
+        // Primera sesión
+        ClassSession session = mapper.toEntity(dto, discipline, instructor, room, clients);
+        repository.save(session);
+        createdSessions.add(mapper.toDTO(session));
+
+        // Crear sesiones recurrentes si aplica
+        if (dto.isRepeat() && dto.getRepeatUntil() != null && dto.getRepeatDay() != null) {
+            int interval = (dto.getRepeatInterval() == null || dto.getRepeatInterval() < 1) ? 1 : dto.getRepeatInterval();
+
+            // Ajustar la primera fecha al día de la semana correcto
+            LocalDate nextDate = dto.getStartDate();
+            while (nextDate.getDayOfWeek() != dto.getRepeatDay()) {
+                nextDate = nextDate.plusDays(1);
+            }
+
+            // Crear todas las sesiones recurrentes
+            nextDate = nextDate.plusWeeks(interval); // la primera ya está creada
+            while (!nextDate.isAfter(dto.getRepeatUntil())) {
+                ClassSession copy = mapper.toEntity(dto, discipline, instructor, room, clients);
+                copy.setStartDate(nextDate);
+                copy.setRepeat(true);
+                copy.setRepeatDay(dto.getRepeatDay());
+                copy.setRepeatInterval(dto.getRepeatInterval());
+
+                repository.save(copy);
+                createdSessions.add(mapper.toDTO(copy));
+
+                nextDate = nextDate.plusWeeks(interval);
+            }
         }
 
-        // no se cargan clientes aquí
-        Set<Client> clients = new HashSet<>(); // vacío
+        return createdSessions;
+    }
 
-        ClassSession session = mapper.toEntity(dto, discipline, instructor, room, clients);
-        return mapper.toDTO(repository.save(session));
+
+    @Override
+    public List<ClassSessionDTO> getClassesByInstructor(Long instructorId) {
+        List<ClassSession> sessions = repository.findByInstructorIdOrderByStartDateAscStartTimeAsc(instructorId);
+        return sessions.stream()
+                .map(mapper::toDTO)
+                .toList();
+    }
+
+    @Override
+    public List<ClassSessionDTO> getPendingClassesToday(Long instructorId) {
+        LocalDate today = LocalDate.now();
+
+        List<ClassSession> sessions = repository
+                .findByInstructorIdAndStartDateAndEstado(instructorId, today, EstadoSession.PENDIENTE);
+
+        return sessions.stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
 

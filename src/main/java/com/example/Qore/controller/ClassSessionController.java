@@ -29,7 +29,7 @@ public class ClassSessionController {
     }
 
     @PostMapping("/create")
-    public ClassSessionDTO create(@RequestBody ClassSessionDTO dto) {
+    public List<ClassSessionDTO> create(@RequestBody ClassSessionDTO dto) {
         return service.create(dto);
     }
 
@@ -58,4 +58,16 @@ public class ClassSessionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/instructor/{instructorId}")
+    public ResponseEntity<List<ClassSessionDTO>> getByInstructor(@PathVariable Long instructorId) {
+        List<ClassSessionDTO> sessions = service.getClassesByInstructor(instructorId);
+        return ResponseEntity.ok(sessions);
+    }
+
+    @GetMapping("/instructors/{instructorId}/pending-today")
+    public ResponseEntity<List<ClassSessionDTO>> getPendingToday(@PathVariable Long instructorId) {
+        return ResponseEntity.ok(service.getPendingClassesToday(instructorId));
+    }
+
 }

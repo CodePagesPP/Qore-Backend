@@ -1,11 +1,13 @@
 package com.example.Qore.model;
 
+import com.example.Qore.model.Enum.EstadoSession;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -25,6 +27,10 @@ public class ClassSession {
 
     @Column(nullable = false)
     private String name;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoSession estado = EstadoSession.PENDIENTE;;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "discipline_id", nullable = false)
@@ -60,5 +66,15 @@ public class ClassSession {
 
     @Column(nullable = false)
     private boolean repeat;
+
+    @Column(name = "repeat_until")
+    private LocalDate repeatUntil; // hasta qué fecha repetir
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "repeat_day", nullable = true)
+    private DayOfWeek repeatDay; // qué día repetir (MONDAY, TUESDAY...)
+
+    @Column(name = "repeat_interval")
+    private Integer repeatInterval; // cada cuántos días o semanas (opcional)
 }
 

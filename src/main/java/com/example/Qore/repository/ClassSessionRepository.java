@@ -1,6 +1,7 @@
 package com.example.Qore.repository;
 
 import com.example.Qore.model.ClassSession;
+import com.example.Qore.model.Enum.EstadoSession;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -43,4 +44,11 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
             LocalDate startDate,
             LocalDate endDate
     );
+
+    List<ClassSession> findByInstructorIdOrderByStartDateAscStartTimeAsc(Long instructorId);
+    long countByInstructorIdAndStartDateBetweenAndEstado(
+            Long instructorId, LocalDate start, LocalDate end, EstadoSession estado);
+    List<ClassSession> findByInstructorIdAndStartDateAndEstado(
+            Long instructorId, LocalDate startDate, EstadoSession estado);
+
 }

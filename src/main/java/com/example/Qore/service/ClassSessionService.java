@@ -10,11 +10,13 @@ import java.util.List;
 public interface ClassSessionService {
     List<ClassSessionDTO> getAll();
     ClassSessionDTO getById(Long id);
-    ClassSessionDTO create(ClassSessionDTO dto);
+    List<ClassSessionDTO> create(ClassSessionDTO dto);
     ClassSessionDTO update(Long id, ClassSessionUpdateDTO dto);
     void delete(Long id);
     void addClientToClass(Long classId, Long clientId);
     long getCurrentWeekClasses();
     long countClassesTaken(Client client);
     List<ClientClassDTO> getClientClasses(Long clientId);
+    List<ClassSessionDTO> getClassesByInstructor(Long instructorId);
+    List<ClassSessionDTO> getPendingClassesToday(Long instructorId);
 }
