@@ -48,13 +48,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/login","/auth/registerAdmin","/admin/registerClient","/payments-webhook/**","/plans/listPlans").permitAll()
                         .requestMatchers("/auth/profile").authenticated()
-                        .requestMatchers("/client/**").hasAnyAuthority("CLIENT_ACCESS", "ADMIN_ACCESS")
-                        .requestMatchers("/instructor/**").hasAnyAuthority("INSTRUCTOR_ACCESS", "ADMIN_ACCESS")
+                        .requestMatchers("/client/**").hasAnyAuthority("ADMIN_ACCESS", "CLIENT_ACCESS")
+                        .requestMatchers("/instructor/**", "/class-sessions/**","/rooms/**", "/disciplines/**").hasAnyAuthority("ADMIN_ACCESS", "INSTRUCTOR_ACCESS")
                         .requestMatchers("/admin/**",
                                          "/rol/**",
-                                         "/rooms/**",
-                                         "/disciplines/**",
-                                         "/class-sessions/**",
                                          "/excel/**",
                                          "/staff/**",
                                          "/manager/**",

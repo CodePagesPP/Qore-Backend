@@ -2,6 +2,7 @@ package com.example.Qore.Mapper;
 
 import com.example.Qore.DTO.ClassSessionDTO;
 import com.example.Qore.model.*;
+import com.example.Qore.model.Enum.EstadoSession;
 import org.springframework.stereotype.Component;
 
 import java.util.Set;
@@ -28,8 +29,12 @@ public class ClassSessionMapper {
                 .capacity(session.getCapacity())
                 .startDate(session.getStartDate())
                 .startTime(session.getStartTime())
+                .estado(session.getEstado().name())
                 .endTime(session.getEndTime())
                 .repeat(session.isRepeat())
+                .repeatUntil(session.getRepeatUntil())
+                .repeatDay(session.getRepeatDay())
+                .repeatInterval(session.getRepeatInterval())
                 .build();
     }
 
@@ -40,10 +45,16 @@ public class ClassSessionMapper {
                 .instructor(instructor)
                 .room(room)
                 .capacity(dto.getCapacity())
+                .estado(dto.getEstado() == null || dto.getEstado().isBlank()
+                        ? EstadoSession.PENDIENTE
+                        : EstadoSession.valueOf(dto.getEstado().toUpperCase()))
                 .startDate(dto.getStartDate())
                 .startTime(dto.getStartTime())
                 .endTime(dto.getEndTime())
                 .repeat(dto.isRepeat())
+                .repeatUntil(dto.getRepeatUntil())
+                .repeatDay(dto.getRepeatDay())
+                .repeatInterval(dto.getRepeatInterval())
                 .build();
     }
 }

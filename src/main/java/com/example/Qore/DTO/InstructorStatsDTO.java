@@ -15,4 +15,5 @@ public class InstructorStatsDTO {
 
     private int totalClassesThisMonth;
     private int totalStudentsThisMonth;
+    private int pendingClassesThisMonth;
 }
