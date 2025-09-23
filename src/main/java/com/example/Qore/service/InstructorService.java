@@ -11,5 +11,4 @@ public interface InstructorService {
     List<InstructorResponseDTO> getAllInstructors();
     InstructorResponseDTO updateInstructor(String dni, InstructorUpdateDTO instructor);
     void deleteInstructor(String dni);
-    InstructorResponseDTO getInstructorByDni(String dni);
 }

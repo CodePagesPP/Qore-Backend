@@ -97,13 +97,6 @@ public class InstructorServiceImpl implements InstructorService {
         instructorRepository.delete(instructorFound);
     }
 
-    @Override
-    public InstructorResponseDTO getInstructorByDni(String dni) {
-        Instructor instructor = instructorRepository.findInstructorByDni(dni)
-                .orElseThrow(() -> new EntityNotFoundException("Instructor not found or is not an Instructor"));
-        return mapToDTO(instructor);
-    }
-
     private InstructorResponseDTO mapToDTO(Instructor instructor){
 
         List<Long> disciplines = instructor.getDiscipline().stream().map(Discipline::getId).collect(Collectors.toList());
