@@ -1,5 +1,6 @@
 package com.example.Qore.DTO;
 
+import com.example.Qore.model.Enum.EstadoSession;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,6 +23,7 @@ public class ClassSessionUpdateDTO {
     private LocalDate startDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private EstadoSession Estado;
     private boolean repeat;
 }
 

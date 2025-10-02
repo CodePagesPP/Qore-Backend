@@ -121,4 +121,49 @@ public class ExcelReportServiceImpl implements ExcelReportService {
         return workbook;
     }
 
+
+    @Override
+    public ByteArrayInputStream generateAllClientsReport(List<Client> clients) throws IOException {
+        try (Workbook workbook = new XSSFWorkbook()) {
+            Sheet sheet = workbook.createSheet("Clientes");
+
+            // cabecera
+            Row header = sheet.createRow(0);
+            String[] columns = {"ID","Nombre","Apellido","Email","Teléfono","DNI","Activo","País","Ciudad","Dirección","Cumpleaños","Plan","Inicio Subscripción","Fin Subscripción"};
+            for (int i = 0; i < columns.length; i++) {
+                Cell cell = header.createCell(i);
+                cell.setCellValue(columns[i]);
+            }
+
+            // filas
+            int rowIdx = 1;
+            for (Client c : clients) {
+                Row row = sheet.createRow(rowIdx++);
+                row.createCell(0).setCellValue(c.getId());
+                row.createCell(1).setCellValue(c.getName() != null ? c.getName() : "");
+                row.createCell(2).setCellValue(c.getLastName() != null ? c.getLastName() : "");
+                row.createCell(3).setCellValue(c.getEmail() != null ? c.getEmail() : "");
+                row.createCell(4).setCellValue(c.getPhoneNumber() != null ? c.getPhoneNumber() : "");
+                row.createCell(5).setCellValue(c.getDni() != null ? c.getDni() : "");
+                row.createCell(6).setCellValue(c.isActive() ? "Sí" : "No");
+                row.createCell(7).setCellValue(c.getCountry() != null ? c.getCountry() : "");
+                row.createCell(8).setCellValue(c.getCity() != null ? c.getCity() : "");
+                row.createCell(9).setCellValue(c.getAddress() != null ? c.getAddress() : "");
+                row.createCell(10).setCellValue(c.getBirthday() != null ? c.getBirthday().toString() : "");
+                row.createCell(11).setCellValue(c.getPlan() != null ? c.getPlan().getName() : "");
+                row.createCell(12).setCellValue(c.getSubscriptionStart() != null ? c.getSubscriptionStart().toString() : "");
+                row.createCell(13).setCellValue(c.getSubscriptionEnd() != null ? c.getSubscriptionEnd().toString() : "");
+            }
+
+            // auto-size
+            for (int i = 0; i < columns.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            workbook.write(out);
+            return new ByteArrayInputStream(out.toByteArray());
+        }
+    }
+
 }

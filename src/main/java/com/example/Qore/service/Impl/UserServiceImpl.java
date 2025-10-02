@@ -6,25 +6,30 @@ import com.example.Qore.repository.AdminRepository;
 import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.UserService;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-
 public class UserServiceImpl implements UserService {
-private final AdminRepository userRepository;
-private final UserRepository userRepository2;
-private final PasswordEncoder passwordEncoder;
-private final RoleRepository roleRepository;
+    private final AdminRepository userRepository;
+    private final UserRepository userRepository2;
+    private final PasswordEncoder passwordEncoder;
+    private final RoleRepository roleRepository;
+    private final JavaMailSender mailSender;
     @Override
     public UserDTO registerAdmin(AdminDTO admin) {
         if(userRepository.findByEmail(admin.getEmail()).isPresent()){
@@ -163,13 +168,7 @@ private final RoleRepository roleRepository;
                         builder.area(staff.getArea());
                     }
 
-                    if (user instanceof Instructor instructor) {
-                        builder.disciplineId(
-                                instructor.getDiscipline().stream()
-                                        .map(Discipline::getId)
-                                        .collect(Collectors.toList())
-                        );
-                    }
+
 
                     return builder.build();
                 })
@@ -187,6 +186,56 @@ private final RoleRepository roleRepository;
     public long countUsersNotAdminOrClient() {
         return userRepository2.countUsersNotAdminOrClient();
     }
+
+    @Override
+    public void generateResetPasswordToken(String email) throws Exception {
+        User user = userRepository2.findByEmail(email)
+                .orElseThrow(() -> new Exception("No se encontró un usuario con ese correo."));
+
+        String token = UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordExpiration(LocalDateTime.now().plusHours(2)); // expira en 2 horas
+        userRepository2.save(user);
+
+        sendResetPasswordEmail(user.getEmail(), token);
+    }
+
+    @Override
+    public void resetPassword(String token, String newPassword) throws Exception {
+        User user = userRepository2.findByResetPasswordToken(token)
+                .orElseThrow(() -> new Exception("Token inválido o expirado."));
+
+        if (user.getResetPasswordExpiration().isBefore(LocalDateTime.now())) {
+            throw new Exception("Token expirado.");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordExpiration(null);
+        userRepository2.save(user);
+    }
+
+
+
+    private void sendResetPasswordEmail(String email, String token) throws Exception {
+        String resetLink = "http://localhost:4200/reset-password?token=" + token;
+        MimeMessage message = mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message);
+
+        helper.setTo(email);
+        helper.setSubject("Restablecer tu contraseña en Qore");
+        helper.setText("<p>Hola,</p>" +
+                "<p>Esperamos que estés teniendo un buen día. Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en Qore, que está diseñada para ayudarte.</p>" +
+                "<p>Si deseas restablecer tu contraseña, haz clic en el enlace de abajo:</p>" +
+                "<a href=\"" + resetLink + "\">Restablecer contraseña</a>" +
+                "<p>Si no solicitaste este cambio, puedes ignorar este correo.</p>" +
+                "<p>¡Gracias por formar parte de nuestra comunidad!</p>" +
+                "<p>Atentamente,<br>El equipo de desarrollo de Qore</p>", true);
+
+        mailSender.send(message);
+    }
+
+
 
 
     private UserDTO mapToDTO(Admin user){

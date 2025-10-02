@@ -11,4 +11,5 @@ import java.util.List;
 public interface ExcelReportService {
     ByteArrayInputStream generateClientBirthdaysReport(List<Client> clients) throws IOException;
     Workbook generateIncomeReport();
+    ByteArrayInputStream generateAllClientsReport(List<Client> clients) throws IOException;
 }

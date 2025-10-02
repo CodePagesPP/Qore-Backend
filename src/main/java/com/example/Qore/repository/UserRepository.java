@@ -27,5 +27,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     @Query("SELECT COUNT(u) FROM User u WHERE u.role.name NOT IN ('ADMIN', 'CLIENT')")
     long countUsersNotAdminOrClient();
+
+    Optional<User> findByResetPasswordToken(String token);
 }
 

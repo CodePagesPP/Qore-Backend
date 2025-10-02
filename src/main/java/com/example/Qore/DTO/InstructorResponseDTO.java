@@ -28,7 +28,6 @@ public class InstructorResponseDTO {
     private String city;
     private String address;
     private String dni;
-    private List<Long> disciplineId;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 }

@@ -1,5 +1,6 @@
 package com.example.Qore.DTO;
 
+import com.example.Qore.model.Discipline;
 import com.example.Qore.model.RoleE;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -26,6 +28,7 @@ public class ClientResponseDTO {
     private String city;
     private String address;
     private String dni;
+    private List<Discipline> disciplines;
     private Timestamp createdAt;
     private Timestamp updatedAt;
 }

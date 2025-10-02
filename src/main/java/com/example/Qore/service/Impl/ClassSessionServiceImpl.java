@@ -123,9 +123,8 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
-        if (!instructor.getDiscipline().contains(discipline)) {
-            throw new RuntimeException("Instructor does not belong to the given discipline");
-        }
+
+
 
         existing.setName(dto.getName());
         existing.setDiscipline(discipline);
@@ -137,6 +136,9 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         existing.setEndTime(dto.getEndTime());
         existing.setRepeat(dto.isRepeat());
 
+        if (dto.getEstado() != null) {
+            existing.setEstado(dto.getEstado());
+        }
         return mapper.toDTO(repository.save(existing));
     }
 
@@ -197,6 +199,52 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         }
     }
 
+    public List<ClassSessionDTO> getClassesForClient(Long clientId) {
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        List<ClassSession> sessions = repository.findByDisciplineIn(client.getDisciplines());
+
+        return sessions.stream().map(s -> {
+            ClassSessionDTO dto = new ClassSessionDTO();
+            dto.setId(s.getId());
+            dto.setName(s.getName());
+            dto.setCapacity(s.getCapacity());
+            dto.setStartDate(s.getStartDate());
+            dto.setStartTime(s.getStartTime());
+            dto.setEndTime(s.getEndTime());
+            dto.setEstado(s.getEstado().name());
+            dto.setDisciplineId(s.getDiscipline().getId());
+            dto.setInstructorId(s.getInstructor().getId());
+            dto.setRoomId(s.getRoom().getId());
+            dto.setJoined(s.getClients().contains(client));
+            return dto;
+        }).collect(Collectors.toList());
+    }
+
+
+    public ClassSession joinClassClient(Long classId, Long clientId) {
+        ClassSession session = repository.findById(classId)
+                .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
+
+        // Validar capacidad
+        if (session.getClients().size() >= session.getCapacity()) {
+            throw new RuntimeException("La clase ya alcanzó su capacidad máxima");
+        }
+
+        // Validar que el cliente no esté ya inscrito
+        if (session.getClients().contains(client)) {
+            throw new RuntimeException("El cliente ya está inscrito en esta clase");
+        }
+
+        // Agregar cliente a la clase
+        session.getClients().add(client);
+
+        return repository.save(session);
+    }
 
 
     @Override

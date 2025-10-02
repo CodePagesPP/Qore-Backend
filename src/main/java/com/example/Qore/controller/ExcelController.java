@@ -50,4 +50,21 @@ public class ExcelController {
         workbook.write(response.getOutputStream());
         workbook.close();
     }
+
+    @GetMapping("/report/clients")
+    public ResponseEntity<InputStreamResource> downloadClientsExcel() throws IOException {
+        // trae TODOS los clientes
+        List<Client> clients = clientRepository.findAll();
+
+        ByteArrayInputStream excelStream = excelReportService.generateAllClientsReport(clients);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Disposition", "attachment; filename=all-clients.xlsx");
+
+        return ResponseEntity
+                .ok()
+                .headers(headers)
+                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(new InputStreamResource(excelStream));
+    }
 }

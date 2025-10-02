@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name="clients")
@@ -22,6 +24,16 @@ public class Client extends User{
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "client_disciplines",
+            joinColumns = @JoinColumn(name = "client_id"),
+            inverseJoinColumns = @JoinColumn(name = "discipline_id")
+    )
+    private List<Discipline> disciplines = new ArrayList<>();
+
+
     private LocalDate subscriptionStart;
     private LocalDate subscriptionEnd;
 }

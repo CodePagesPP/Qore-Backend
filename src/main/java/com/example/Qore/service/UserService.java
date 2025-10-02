@@ -15,4 +15,6 @@ public interface UserService {
     void deleteWorker(long id);
     UserResponseDTO updateWorker(String dni, UserUpdateDTO dto);
     long countUsersNotAdminOrClient();
+    void generateResetPasswordToken(String email) throws Exception;
+    void resetPassword(String token, String newPassword) throws Exception;
 }

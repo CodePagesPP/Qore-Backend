@@ -67,6 +67,9 @@ public class ClassSession {
     @Column(nullable = false)
     private boolean repeat;
 
+    @Column(name = "comentario")
+    private String comentario;
+
     @Column(name = "repeat_until")
     private LocalDate repeatUntil; // hasta qué fecha repetir
 

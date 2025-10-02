@@ -65,5 +65,12 @@ public class User {
 
     @Column(unique = false)
     private Timestamp updatedAt;
+
+    @Column(name = "reset_password_token")
+    private String resetPasswordToken;
+
+    @Column(name = "reset_password_expiration")
+    private LocalDateTime resetPasswordExpiration;
+
 }
 

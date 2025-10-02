@@ -17,6 +17,5 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 public class Instructor extends User{
-    @ManyToMany(fetch = FetchType.LAZY)
-    private List<Discipline> discipline;
+
 }

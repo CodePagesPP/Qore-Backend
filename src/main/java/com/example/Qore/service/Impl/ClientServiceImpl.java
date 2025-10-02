@@ -2,9 +2,11 @@ package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.*;
 import com.example.Qore.model.Client;
+import com.example.Qore.model.Discipline;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.ClientRepository;
+import com.example.Qore.repository.DisciplineRepository;
 import com.example.Qore.repository.RoleRepository;
 import com.example.Qore.service.ClientService;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,6 +29,7 @@ public class ClientServiceImpl implements ClientService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final ClassSessionRepository classRepository;
+    private final DisciplineRepository disciplineRepository;
     @Override
     public ClientResponseDTO registerClient(ClientRegisterDTO dto) {
 
@@ -43,6 +46,10 @@ public class ClientServiceImpl implements ClientService {
         RoleE clientRole = roleRepository.findByName("CLIENT")
                 .orElseThrow(() -> new RuntimeException("Rol CLIENT no existe en la base de datos"));
 
+        List<Discipline> disciplines = new ArrayList<>();
+        if (dto.getDisciplineIds() != null && !dto.getDisciplineIds().isEmpty()) {
+            disciplines = disciplineRepository.findAllById(dto.getDisciplineIds());
+        }
 
         Client user = Client.builder()
                 .email(dto.getEmail())
@@ -57,6 +64,7 @@ public class ClientServiceImpl implements ClientService {
                 .city(dto.getCity())
                 .birthday(dto.getBirthday())
                 .role(clientRole)
+                .disciplines(disciplines)
                 .createdAt(Timestamp.valueOf(LocalDateTime.now()))
                 .active(true)
                 .build();
@@ -98,6 +106,10 @@ public class ClientServiceImpl implements ClientService {
         if (dto.getCity() != null) user.setCity(dto.getCity());
         if (dto.getAddress() != null) user.setAddress(dto.getAddress());
         if (dto.getDni() != null) user.setDni(dto.getDni());
+        if (dto.getDisciplineIds() != null) {
+            List<Discipline> newDisciplines = disciplineRepository.findAllById(dto.getDisciplineIds());
+            user.setDisciplines(newDisciplines);
+        }
         user.setUpdatedAt(Timestamp.valueOf(LocalDateTime.now()));
         return mapToDTO(userRepository.save(user));
     }
@@ -247,6 +259,7 @@ public class ClientServiceImpl implements ClientService {
                 .city(user.getCity())
                 .sex(user.getSex())
                 .address(user.getAddress())
+                .disciplines(user.getDisciplines())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();
