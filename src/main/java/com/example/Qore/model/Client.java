@@ -21,6 +21,10 @@ public class Client extends User{
     @Column(nullable = false)
     private boolean active = true;
 
+    @Column(nullable = false)
+    private boolean trialCompleted = false;
+
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id")
     private Plan plan;
