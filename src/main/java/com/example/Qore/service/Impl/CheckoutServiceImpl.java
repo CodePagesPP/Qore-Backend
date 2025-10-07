@@ -58,7 +58,7 @@ public class CheckoutServiceImpl implements CheckoutService {
             var prefClient = new com.mercadopago.client.preference.PreferenceClient();
             var preference = prefClient.create(prefReq);
 
-            return preference.getSandboxInitPoint();
+            return preference.getInitPoint();
 
         } catch (com.mercadopago.exceptions.MPApiException e) {
             System.err.println("Error de MPApiException: " + e.getApiResponse().getContent());

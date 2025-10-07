@@ -241,6 +241,7 @@ public class ClientServiceImpl implements ClientService {
                 .totalClasses(dto.getTotalClasses())
                 .classesTaken(dto.getClassesTaken())
                 .classesRemaining(dto.getClassesRemaining())
+                .trialCompleted(client.isTrialCompleted())
                 .build();
     }
 
@@ -260,6 +261,7 @@ public class ClientServiceImpl implements ClientService {
                 .sex(user.getSex())
                 .address(user.getAddress())
                 .disciplines(user.getDisciplines())
+                .trialCompleted(user.isTrialCompleted())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
                 .build();

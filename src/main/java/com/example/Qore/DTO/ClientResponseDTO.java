@@ -28,6 +28,7 @@ public class ClientResponseDTO {
     private String city;
     private String address;
     private String dni;
+    private boolean trialCompleted;
     private List<Discipline> disciplines;
     private Timestamp createdAt;
     private Timestamp updatedAt;

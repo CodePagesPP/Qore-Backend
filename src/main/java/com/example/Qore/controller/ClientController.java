@@ -4,10 +4,12 @@ import com.example.Qore.DTO.*;
 import com.example.Qore.model.Client;
 import com.example.Qore.model.User;
 import com.example.Qore.repository.ClassSessionRepository;
+import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.ClassSessionService;
 import com.example.Qore.service.ClientService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/client")
@@ -29,6 +32,8 @@ public class ClientController {
     private ClientService clientService;
     @Autowired
     private ClassSessionService classSessionService;
+    @Autowired
+    private ClientRepository clientRepository;
 
     @GetMapping("/profile")
     public ResponseEntity<User> getProfile(@AuthenticationPrincipal UserDetails userDetails) {
@@ -117,4 +122,29 @@ public class ClientController {
         List<ClientClassDTO> classes = classSessionService.getClientClasses(client.getId());
         return ResponseEntity.ok(classes);
     }
+
+    @PutMapping("/{id}/trial")
+    public ResponseEntity<Map<String, Object>> updateTrialStatus(@PathVariable Long id, @RequestParam boolean completed) {
+        Optional<Client> optionalClient = clientRepository.findById(id);
+        if (optionalClient.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of(
+                            "success", false,
+                            "message", "Cliente no encontrado"
+                    ));
+        }
+
+        Client client = optionalClient.get();
+        client.setTrialCompleted(completed);
+        clientRepository.save(client);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        response.put("message", "Estado de clase de prueba actualizado correctamente");
+        response.put("clientId", client.getId());
+        response.put("trialCompleted", client.isTrialCompleted());
+
+        return ResponseEntity.ok(response);
+    }
+
 }

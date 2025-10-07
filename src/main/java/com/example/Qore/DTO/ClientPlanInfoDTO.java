@@ -23,5 +23,6 @@ public class ClientPlanInfoDTO {
     private long totalClasses;
     private long classesTaken;
     private long classesRemaining;
+    private boolean trialCompleted;
 }
 
