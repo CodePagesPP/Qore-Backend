@@ -158,23 +158,44 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             throw new IllegalStateException("Client is already enrolled in this class");
         }
 
+
         if (client.getPlan() == null) {
             throw new IllegalStateException("Client has no active plan");
         }
 
-        if (isPlanExpired(client) || isClassesExhausted(client)) {
-            throw new IllegalStateException("Client must purchase a new pack before enrolling in more classes");
-        }
 
         ensureSubscriptionDates(client, classSession.getStartDate());
+
+
+        if (isPlanExpired(client)) {
+            throw new IllegalStateException("Your plan has expired. Please renew your plan.");
+        }
+
+        if (isClassesExhausted(client)) {
+            throw new IllegalStateException("You have already used all your classes.");
+        }
+
 
         classSession.getClients().add(client);
         repository.save(classSession);
     }
 
+    private void ensureSubscriptionDates(Client client, LocalDate firstClassDate) {
+        if (client.getSubscriptionStart() == null) {
+            // Primera clase => inicializa sus fechas
+            client.setSubscriptionStart(firstClassDate);
+
+            // Asumimos que cada plan tiene una duración en días
+            int durationDays = client.getPlan().getDuration(); // este campo deberías tenerlo en tu entidad Plan
+            client.setSubscriptionEnd(firstClassDate.plusDays(durationDays));
+
+            clientRepository.save(client);
+        }
+    }
+
     private boolean isPlanExpired(Client client) {
-        LocalDate today = LocalDate.now();
-        return client.getSubscriptionEnd() == null || client.getSubscriptionEnd().isBefore(today);
+        return client.getSubscriptionEnd() != null &&
+                client.getSubscriptionEnd().isBefore(LocalDate.now());
     }
 
     private boolean isClassesExhausted(Client client) {
@@ -182,22 +203,17 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         return clasesTomadas >= client.getPlan().getSessions();
     }
 
-    @Override
     public long countClassesTaken(Client client) {
-        return repository.findByClients_Id(client.getId()).stream()
-                .filter(c -> !c.getStartDate().isBefore(client.getSubscriptionStart())
-                        && !c.getStartDate().isAfter(client.getSubscriptionEnd()))
-                .count();
+        if (client.getSubscriptionStart() == null || client.getSubscriptionEnd() == null) {
+            return 0;
+        }
+        return repository.countClassesByClientAndPeriod(
+                client.getId(),
+                client.getSubscriptionStart(),
+                client.getSubscriptionEnd()
+        );
     }
 
-    private void ensureSubscriptionDates(Client client, LocalDate start) {
-        if (client.getSubscriptionStart() == null) {
-            LocalDate end = start.plusDays(client.getPlan().getDuration());
-            client.setSubscriptionStart(start);
-            client.setSubscriptionEnd(end);
-            clientRepository.save(client);
-        }
-    }
 
     public List<ClassSessionDTO> getClassesForClient(Long clientId) {
         Client client = clientRepository.findById(clientId)
@@ -223,6 +239,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     }
 
 
+    @Override
     public ClassSession joinClassClient(Long classId, Long clientId) {
         ClassSession session = repository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
@@ -230,21 +247,47 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        // Validar capacidad
+        //  1. Validar capacidad
         if (session.getClients().size() >= session.getCapacity()) {
             throw new RuntimeException("La clase ya alcanzó su capacidad máxima");
         }
 
-        // Validar que el cliente no esté ya inscrito
+        //  2. Validar que no esté ya inscrito
         if (session.getClients().contains(client)) {
             throw new RuntimeException("El cliente ya está inscrito en esta clase");
         }
 
-        // Agregar cliente a la clase
-        session.getClients().add(client);
+        //  3. Validar que tenga plan
+        if (client.getPlan() == null) {
+            throw new RuntimeException("El cliente no cuenta con un plan activo");
+        }
 
+        //  4. Si no tiene fechas de suscripción (primera clase), inicializarlas
+        if (client.getSubscriptionStart() == null || client.getSubscriptionEnd() == null) {
+            LocalDate startDate = session.getStartDate();
+            int durationDays = client.getPlan().getDuration(); // ya lo tienes en tu entidad Plan
+            LocalDate endDate = startDate.plusDays(durationDays);
+
+            client.setSubscriptionStart(startDate);
+            client.setSubscriptionEnd(endDate);
+            clientRepository.save(client);
+        }
+
+        //  5. Validar vencimiento de plan
+        if (isPlanExpired(client)) {
+            throw new RuntimeException("Tu plan ha vencido. Por favor renueva para continuar asistiendo a clases.");
+        }
+
+        // 6. Validar clases restantes
+        if (isClassesExhausted(client)) {
+            throw new RuntimeException("Has utilizado todas las clases disponibles en tu plan.");
+        }
+
+        //  7. Agregar cliente a la clase
+        session.getClients().add(client);
         return repository.save(session);
     }
+
 
 
     @Override
