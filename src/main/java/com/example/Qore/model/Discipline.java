@@ -24,11 +24,5 @@ public class Discipline {
     private String name;
 
     private String description;
-
-    @Column(nullable = false)
-    private LocalTime startTime;
-
-    @Column(nullable = false)
-    private LocalTime endTime;
 }
 

@@ -55,15 +55,14 @@ public class SecurityConfig {
                         .requestMatchers("/instructor/**", "/class-sessions/**","/rooms/**", "/disciplines/**").hasAnyAuthority("ADMIN_ACCESS", "INSTRUCTOR_ACCESS", "MANAGER_ACCESS","STAFF_ACCESS", "CLIENT_ACCESS")
                         .requestMatchers(HttpMethod.DELETE,"/admin/**",
                                 "/rol/**",
-                                "/excel/**",
                                 "/staff/**",
                                 "/manager/**",
                                 "/permission/**",
                                 "/plans/**",
                                 "/payments/current-month-income").hasAnyAuthority("ADMIN_ACCESS", "MANAGER_ACCESS")
+                        .requestMatchers("/excel/**").hasAnyAuthority("ADMIN_ACCESS", "MANAGER_ACCESS")
                         .requestMatchers("/admin/**",
                                          "/rol/**",
-                                         "/excel/**",
                                          "/staff/**",
                                          "/manager/**",
                                          "/permission/**",

@@ -73,9 +73,11 @@ public class ClassSession {
     @Column(name = "repeat_until")
     private LocalDate repeatUntil; // hasta qué fecha repetir
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "class_repeat_days", joinColumns = @JoinColumn(name = "class_id"))
+    @Column(name = "day_of_week")
     @Enumerated(EnumType.STRING)
-    @Column(name = "repeat_day", nullable = true)
-    private DayOfWeek repeatDay; // qué día repetir (MONDAY, TUESDAY...)
+    private Set<DayOfWeek> repeatDays = new HashSet<>();
 
     @Column(name = "repeat_interval")
     private Integer repeatInterval; // cada cuántos días o semanas (opcional)
