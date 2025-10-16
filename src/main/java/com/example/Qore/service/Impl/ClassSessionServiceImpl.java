@@ -61,28 +61,36 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         createdSessions.add(mapper.toDTO(session));
 
         // Crear sesiones recurrentes si aplica
-        if (dto.isRepeat() && dto.getRepeatUntil() != null && dto.getRepeatDay() != null) {
+        if (dto.isRepeat() && dto.getRepeatUntil() != null && dto.getRepeatDays() != null && !dto.getRepeatDays().isEmpty()) {
             int interval = (dto.getRepeatInterval() == null || dto.getRepeatInterval() < 1) ? 1 : dto.getRepeatInterval();
 
-            // Ajustar la primera fecha al día de la semana correcto
-            LocalDate nextDate = dto.getStartDate();
-            while (nextDate.getDayOfWeek() != dto.getRepeatDay()) {
-                nextDate = nextDate.plusDays(1);
-            }
+            LocalDate start = dto.getStartDate();
+            LocalDate end = dto.getRepeatUntil();
 
-            // Crear todas las sesiones recurrentes
-            nextDate = nextDate.plusWeeks(interval); // la primera ya está creada
-            while (!nextDate.isAfter(dto.getRepeatUntil())) {
-                ClassSession copy = mapper.toEntity(dto, discipline, instructor, room, clients);
-                copy.setStartDate(nextDate);
-                copy.setRepeat(true);
-                copy.setRepeatDay(dto.getRepeatDay());
-                copy.setRepeatInterval(dto.getRepeatInterval());
+            // Para cada día seleccionado (por ejemplo Lunes y Miércoles)
+            for (DayOfWeek repeatDay : dto.getRepeatDays()) {
+                LocalDate nextDate = start;
 
-                repository.save(copy);
-                createdSessions.add(mapper.toDTO(copy));
+                // Mueve la fecha inicial al siguiente día válido
+                while (nextDate.getDayOfWeek() != repeatDay) {
+                    nextDate = nextDate.plusDays(1);
+                }
 
-                nextDate = nextDate.plusWeeks(interval);
+                // Crear todas las sesiones de ese día
+                while (!nextDate.isAfter(end)) {
+                    // Evita duplicar la primera si ya la creaste antes
+                    if (!nextDate.equals(dto.getStartDate())) {
+                        ClassSession copy = mapper.toEntity(dto, discipline, instructor, room, clients);
+                        copy.setStartDate(nextDate);
+                        copy.setRepeat(true);
+                        copy.setRepeatDays(dto.getRepeatDays());
+                        copy.setRepeatInterval(dto.getRepeatInterval());
+
+                        repository.save(copy);
+                        createdSessions.add(mapper.toDTO(copy));
+                    }
+                    nextDate = nextDate.plusWeeks(interval);
+                }
             }
         }
 

@@ -33,7 +33,7 @@ public class ClassSessionMapper {
                 .endTime(session.getEndTime())
                 .repeat(session.isRepeat())
                 .repeatUntil(session.getRepeatUntil())
-                .repeatDay(session.getRepeatDay())
+                .repeatDays(session.getRepeatDays())
                 .repeatInterval(session.getRepeatInterval())
                 .build();
     }
@@ -53,7 +53,7 @@ public class ClassSessionMapper {
                 .endTime(dto.getEndTime())
                 .repeat(dto.isRepeat())
                 .repeatUntil(dto.getRepeatUntil())
-                .repeatDay(dto.getRepeatDay())
+                .repeatDays(dto.getRepeatDays())
                 .repeatInterval(dto.getRepeatInterval())
                 .build();
     }

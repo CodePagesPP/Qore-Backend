@@ -32,7 +32,7 @@ public class ClassSessionDTO {
     private LocalDate repeatUntil; // hasta qué fecha repetir
 
 
-    private DayOfWeek repeatDay; // qué día repetir (MONDAY, TUESDAY...)
+    private Set<DayOfWeek> repeatDays;// qué día repetir (MONDAY, TUESDAY...)
 
     private Integer repeatInterval;
     private Set<Long> clientIds;
