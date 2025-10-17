@@ -2,6 +2,7 @@ package com.example.Qore.controller;
 
 import com.example.Qore.DTO.ClassSessionDTO;
 import com.example.Qore.DTO.ClassSessionUpdateDTO;
+import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.model.ClassSession;
 import com.example.Qore.service.ClassSessionService;
 import lombok.RequiredArgsConstructor;
@@ -88,5 +89,11 @@ public class ClassSessionController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/{classId}/clients")
+    public ResponseEntity<List<ClientResponseDTO>> getClientsByClass(@PathVariable Long classId) {
+        return ResponseEntity.ok(service.getClientsByClass(classId));
+    }
+
 
 }
