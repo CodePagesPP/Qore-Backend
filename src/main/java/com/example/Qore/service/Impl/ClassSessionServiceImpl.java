@@ -3,6 +3,7 @@ package com.example.Qore.service.Impl;
 import com.example.Qore.DTO.ClassSessionDTO;
 import com.example.Qore.DTO.ClassSessionUpdateDTO;
 import com.example.Qore.DTO.ClientClassDTO;
+import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.Mapper.ClassSessionMapper;
 import com.example.Qore.model.*;
 import com.example.Qore.model.Enum.EstadoSession;
@@ -42,6 +43,18 @@ public class ClassSessionServiceImpl implements ClassSessionService {
                 .map(mapper::toDTO)
                 .orElseThrow(() -> new RuntimeException("ClassSession not found"));
     }
+
+    public List<ClientResponseDTO> getClientsByClass(Long classId) {
+        List<Client> clients = repository.findClientsByClassId(classId);
+        return clients.stream()
+                .map(c -> ClientResponseDTO.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .email(c.getEmail())
+                        .build())
+                .toList();
+    }
+
 
     @Override
     public List<ClassSessionDTO> create(ClassSessionDTO dto) {
@@ -240,6 +253,11 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             dto.setEstado(s.getEstado().name());
             dto.setDisciplineId(s.getDiscipline().getId());
             dto.setInstructorId(s.getInstructor().getId());
+            dto.setClientIds(
+                    s.getClients().stream()
+                            .map(Client::getId)
+                            .collect(Collectors.toSet())
+            );
             dto.setRoomId(s.getRoom().getId());
             dto.setJoined(s.getClients().contains(client));
             return dto;

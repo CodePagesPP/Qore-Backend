@@ -1,6 +1,7 @@
 package com.example.Qore.repository;
 
 import com.example.Qore.model.ClassSession;
+import com.example.Qore.model.Client;
 import com.example.Qore.model.Discipline;
 import com.example.Qore.model.Enum.EstadoSession;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -54,4 +55,6 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
 
     List<ClassSession> findByDisciplineIn(List<Discipline> disciplines);
 
+    @Query("SELECT c FROM ClassSession cs JOIN cs.clients c WHERE cs.id = :classId")
+    List<Client> findClientsByClassId(@Param("classId") Long classId);
 }
