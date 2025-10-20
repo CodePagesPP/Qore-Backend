@@ -23,7 +23,7 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
     @Query("SELECT c FROM Client c WHERE c.dni = :dni AND c.role.name = 'CLIENT'")
     Optional<Client> findClientByDniAndRole(@Param("dni") String dni);
 
-    @Query("SELECT c FROM Client c WHERE c.role.name = :roleName AND c.active = true")
+    @Query("SELECT c FROM Client c WHERE c.role.name = :roleName AND c.active = true ORDER BY c.name ASC, c.lastName ASC")
     List<Client> findActiveClientsByRoleName(@Param("roleName") String roleName);
 
     boolean existsByDni(String dni);

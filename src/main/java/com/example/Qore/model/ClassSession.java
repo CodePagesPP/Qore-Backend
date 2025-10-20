@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -69,6 +70,9 @@ public class ClassSession {
 
     @Column(name = "comentario")
     private String comentario;
+
+    @Column(name = "comentario_at")
+    private LocalDateTime comentarioAt;
 
     @Column(name = "repeat_until")
     private LocalDate repeatUntil; // hasta qué fecha repetir

@@ -4,26 +4,25 @@ import com.example.Qore.DTO.InstructorRegisterDTO;
 import com.example.Qore.DTO.InstructorResponseDTO;
 import com.example.Qore.DTO.InstructorStatsDTO;
 import com.example.Qore.DTO.InstructorUpdateDTO;
-import com.example.Qore.model.ClassSession;
-import com.example.Qore.model.Discipline;
+import com.example.Qore.model.*;
 import com.example.Qore.model.Enum.EstadoSession;
-import com.example.Qore.model.Instructor;
-import com.example.Qore.model.RoleE;
-import com.example.Qore.repository.ClassSessionRepository;
-import com.example.Qore.repository.DisciplineRepository;
-import com.example.Qore.repository.InstructorRepository;
-import com.example.Qore.repository.RoleRepository;
+import com.example.Qore.repository.*;
 import com.example.Qore.service.InstructorService;
 import com.example.Qore.service.PlanService;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,7 +35,9 @@ public class InstructorServiceImpl implements InstructorService {
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final ClassSessionRepository classSessionRepository;
-    private final PlanServiceImpl planService;
+    private final JavaMailSender mailSender;
+    private final ManagerRepository managerRepository;
+    private final StaffRepository staffRepository;
 
     @Override
     public InstructorResponseDTO registerInstructor(InstructorRegisterDTO instructor) {
@@ -151,6 +152,84 @@ public class InstructorServiceImpl implements InstructorService {
                 .pendingClassesThisMonth((int) pendingClasses) // nuevo campo
                 .build();
     }
+
+    @Override
+    public void sendComentarioNotificationEmail(ClassSession session) {
+        List<String> recipients = new ArrayList<>();
+
+        // Obtenemos todos los managers y staff
+        List<Manager> managers = managerRepository.findAll();
+        List<Staff> staffList = staffRepository.findAll();
+
+        // Extraemos los correos
+        managers.forEach(m -> recipients.add(m.getEmail()));
+        staffList.forEach(s -> recipients.add(s.getEmail()));
+
+        if (recipients.isEmpty()) return;
+
+        try {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+            DateTimeFormatter commentFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+            for (String email : recipients) {
+                MimeMessage message = mailSender.createMimeMessage();
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+
+                helper.setTo(email);
+                helper.setSubject("Nuevo comentario del instructor en una clase");
+
+                // 🕒 Formateamos la fecha y hora de la clase
+                String fechaClase = session.getStartDate() != null
+                        ? session.getStartDate().format(dateFormatter)
+                        : "N/A";
+
+
+                String horaInicio = session.getStartTime() != null ? session.getStartTime().toString() : "N/A";
+                String horaFin = session.getEndTime() != null ? session.getEndTime().toString() : "N/A";
+
+                // 📄 Contenido HTML del correo
+                String content = """
+            <div style="font-family: Arial, sans-serif; padding: 16px; background-color: #f9f9f9; border-radius: 10px;">
+                <h2 style="color: #1e88e5;">Nuevo comentario en una clase</h2>
+                <p>El instructor ha dejado un nuevo comentario en la clase <b>%s</b>.</p>
+                
+                <p><b>Comentario:</b><br>%s</p>
+                
+                <p><b>Fecha de la clase:</b> %s<br>
+                <b>Horario:</b> %s - %s</p>
+                
+                <p><b>Disciplina:</b> %s<br>
+                <b>Instructor:</b> %s</p>
+                
+                <p><b>Fecha del comentario:</b> %s</p>
+                
+                <hr style="border: 0; border-top: 1px solid #ddd; margin: 16px 0;">
+                <p style="color: #666;">Este mensaje fue generado automáticamente por el sistema <b>Qore</b>.</p>
+            </div>
+            """.formatted(
+                        session.getName(),
+                        session.getComentario(),
+                        fechaClase,
+                        horaInicio,
+                        horaFin,
+                        session.getDiscipline() != null ? session.getDiscipline().getName() : "N/A",
+                        session.getInstructor() != null ? session.getInstructor().getName() : "N/A",
+                        session.getComentarioAt() != null
+                                ? session.getComentarioAt().format(commentFormatter)
+                                : "N/A"
+                );
+
+                helper.setText(content, true);
+                mailSender.send(message);
+            }
+        } catch (Exception e) {
+            System.err.println("Error enviando correos de notificación: " + e.getMessage());
+        }
+    }
+
+
+
 
 
     private InstructorResponseDTO mapToDTO(Instructor instructor){

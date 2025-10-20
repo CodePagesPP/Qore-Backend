@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     private final ClientRepository clientRepository;
     private final RoomRepository roomRepository;
     private final ClassSessionMapper mapper;
+    private final EmailService emailService;
 
     @Override
     public List<ClassSessionDTO> getAll() {
@@ -51,6 +53,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
                         .id(c.getId())
                         .name(c.getName())
                         .email(c.getEmail())
+                        .phoneNumber(c.getPhoneNumber())
                         .build())
                 .toList();
     }
@@ -144,9 +147,21 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Room room = roomRepository.findById(dto.getRoomId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
 
+        // 🧩 Guardar los valores anteriores antes de actualizar
+        ClassSession oldData = ClassSession.builder()
+                .name(existing.getName())
+                .discipline(existing.getDiscipline())
+                .instructor(existing.getInstructor())
+                .room(existing.getRoom())
+                .capacity(existing.getCapacity())
+                .startDate(existing.getStartDate())
+                .startTime(existing.getStartTime())
+                .endTime(existing.getEndTime())
+                .repeat(existing.isRepeat())
+                .estado(existing.getEstado())
+                .build();
 
-
-
+        // ✅ Actualizar con los nuevos datos
         existing.setName(dto.getName());
         existing.setDiscipline(discipline);
         existing.setInstructor(instructor);
@@ -160,8 +175,80 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         if (dto.getEstado() != null) {
             existing.setEstado(dto.getEstado());
         }
-        return mapper.toDTO(repository.save(existing));
+
+        ClassSession updated = repository.save(existing);
+
+        // 📨 Enviar correo de notificación si hubo cambios
+        sendUpdateNotification(oldData, updated);
+
+        return mapper.toDTO(updated);
     }
+
+    private void sendUpdateNotification(ClassSession oldData, ClassSession updated) {
+        if (updated.getClients() == null || updated.getClients().isEmpty()) return;
+
+        String subject = "Actualización en tu clase: " + updated.getName();
+
+        // 🧠 Construir tabla comparativa de cambios
+        StringBuilder changesTable = new StringBuilder();
+        changesTable.append("<table style='border-collapse:collapse;width:100%;margin-top:10px;'>")
+                .append("<tr style='background-color:#5C6BC0;color:white;text-align:left;'>")
+                .append("<th style='padding:8px;'>Campo</th>")
+                .append("<th style='padding:8px;'>Anterior</th>")
+                .append("<th style='padding:8px;'>Nuevo</th>")
+                .append("</tr>");
+
+        addChange(changesTable, "Nombre", oldData.getName(), updated.getName());
+        addChange(changesTable, "Disciplina", oldData.getDiscipline().getName(), updated.getDiscipline().getName());
+        addChange(changesTable, "Instructor", oldData.getInstructor().getName(), updated.getInstructor().getName());
+        addChange(changesTable, "Sala", oldData.getRoom().getName(), updated.getRoom().getName());
+        addChange(changesTable, "Capacidad", String.valueOf(oldData.getCapacity()), String.valueOf(updated.getCapacity()));
+        addChange(changesTable, "Fecha", String.valueOf(oldData.getStartDate()), String.valueOf(updated.getStartDate()));
+        addChange(changesTable, "Hora inicio", String.valueOf(oldData.getStartTime()), String.valueOf(updated.getStartTime()));
+        addChange(changesTable, "Hora fin", String.valueOf(oldData.getEndTime()), String.valueOf(updated.getEndTime()));
+        addChange(changesTable, "Estado", String.valueOf(oldData.getEstado()), String.valueOf(updated.getEstado()));
+
+        changesTable.append("</table>");
+
+        String htmlTemplate = """
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color: #5C6BC0;">Tu clase ha sido actualizada 🧘‍♀️</h2>
+            <p>Hola 👋, queremos informarte que la clase <strong>%s</strong> ha sido modificada.</p>
+            <p><b>Resumen de cambios:</b></p>
+            %s
+            <p style="margin-top:20px;">Por favor revisa los cambios en tu panel de usuario.</p>
+            <hr style="margin-top:25px;">
+            <p style="font-size:0.9em;color:#777;">Atentamente,<br>Equipo Qore</p>
+        </div>
+    """;
+
+        String htmlBody = String.format(htmlTemplate, updated.getName(), changesTable);
+
+        // Enviar correo a todos los clientes inscritos
+        updated.getClients().forEach(client -> {
+            if (client.getEmail() != null && !client.getEmail().isBlank()) {
+                emailService.sendHtmlEmail(client.getEmail(), subject, htmlBody);
+            }
+        });
+    }
+
+    private void addChange(StringBuilder sb, String field, String oldVal, String newVal) {
+        if (oldVal == null) oldVal = "-";
+        if (newVal == null) newVal = "-";
+
+        // Si el valor cambió, lo resaltamos visualmente
+        boolean changed = !oldVal.equals(newVal);
+        String bg = changed ? "background-color:#f1f1ff;" : "background-color:#fafafa;";
+
+        sb.append(String.format(
+                "<tr style='%s'><td style='padding:8px;border:1px solid #ddd;'>%s</td>" +
+                        "<td style='padding:8px;border:1px solid #ddd;'>%s</td>" +
+                        "<td style='padding:8px;border:1px solid #ddd;'>%s</td></tr>",
+                bg, field, oldVal, newVal
+        ));
+    }
+
+
 
     @Override
     public void addClientToClass(Long classId, Long clientId) {
@@ -169,19 +256,19 @@ public class ClassSessionServiceImpl implements ClassSessionService {
                 .orElseThrow(() -> new EntityNotFoundException("Class not found"));
 
         if (classSession.getClients().size() >= classSession.getCapacity()) {
-            throw new IllegalStateException("Class is full");
+            throw new IllegalStateException("Clase está llena");
         }
 
         Client client = clientRepository.findById(clientId)
-                .orElseThrow(() -> new EntityNotFoundException("Client not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
 
         if (classSession.getClients().contains(client)) {
-            throw new IllegalStateException("Client is already enrolled in this class");
+            throw new IllegalStateException("El cliente ya está inscrito en esta clase");
         }
 
 
         if (client.getPlan() == null) {
-            throw new IllegalStateException("Client has no active plan");
+            throw new IllegalStateException("Cliente no tiene un plana activo");
         }
 
 
@@ -189,17 +276,35 @@ public class ClassSessionServiceImpl implements ClassSessionService {
 
 
         if (isPlanExpired(client)) {
-            throw new IllegalStateException("Your plan has expired. Please renew your plan.");
+            throw new IllegalStateException("Plan del cliente expiró.");
         }
 
         if (isClassesExhausted(client)) {
-            throw new IllegalStateException("You have already used all your classes.");
+            throw new IllegalStateException("El cliente usó todas las clases de su plan.");
         }
 
 
         classSession.getClients().add(client);
         repository.save(classSession);
     }
+
+
+    @Override
+    public void removeClientFromClass(Long classId, Long clientId) {
+        ClassSession classSession = repository.findById(classId)
+                .orElseThrow(() -> new EntityNotFoundException("Class not found"));
+
+        Client client = clientRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+
+        if (!classSession.getClients().contains(client)) {
+            throw new IllegalStateException("El cliente no está inscrito en esta clase");
+        }
+
+        classSession.getClients().remove(client);
+        repository.save(classSession);
+    }
+
 
     private void ensureSubscriptionDates(Client client, LocalDate firstClassDate) {
         if (client.getSubscriptionStart() == null) {
@@ -273,25 +378,35 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        //  1. Validar capacidad
+        // 1️⃣ Validar si la clase ya pasó
+        LocalDate today = LocalDate.now();
+        LocalTime now = LocalTime.now();
+
+        // Si la clase es de una fecha anterior o del mismo día pero ya terminó
+        if (session.getStartDate().isBefore(today)
+                || (session.getStartDate().isEqual(today) && session.getEndTime().isBefore(now))) {
+            throw new RuntimeException("No puedes unirte a una clase pasada.");
+        }
+
+        // 2️⃣ Validar capacidad
         if (session.getClients().size() >= session.getCapacity()) {
             throw new RuntimeException("La clase ya alcanzó su capacidad máxima");
         }
 
-        //  2. Validar que no esté ya inscrito
+        // 3️⃣ Validar que no esté ya inscrito
         if (session.getClients().contains(client)) {
             throw new RuntimeException("El cliente ya está inscrito en esta clase");
         }
 
-        //  3. Validar que tenga plan
+        // 4️⃣ Validar plan activo
         if (client.getPlan() == null) {
             throw new RuntimeException("El cliente no cuenta con un plan activo");
         }
 
-        //  4. Si no tiene fechas de suscripción (primera clase), inicializarlas
+        // 5️⃣ Inicializar fechas de suscripción si es la primera clase
         if (client.getSubscriptionStart() == null || client.getSubscriptionEnd() == null) {
             LocalDate startDate = session.getStartDate();
-            int durationDays = client.getPlan().getDuration(); // ya lo tienes en tu entidad Plan
+            int durationDays = client.getPlan().getDuration();
             LocalDate endDate = startDate.plusDays(durationDays);
 
             client.setSubscriptionStart(startDate);
@@ -299,20 +414,21 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             clientRepository.save(client);
         }
 
-        //  5. Validar vencimiento de plan
+        // 6️⃣ Validar vencimiento de plan
         if (isPlanExpired(client)) {
             throw new RuntimeException("Tu plan ha vencido. Por favor renueva para continuar asistiendo a clases.");
         }
 
-        // 6. Validar clases restantes
+        // 7️⃣ Validar clases restantes
         if (isClassesExhausted(client)) {
             throw new RuntimeException("Has utilizado todas las clases disponibles en tu plan.");
         }
 
-        //  7. Agregar cliente a la clase
+        // 8️⃣ Agregar cliente a la clase
         session.getClients().add(client);
         return repository.save(session);
     }
+
 
 
 

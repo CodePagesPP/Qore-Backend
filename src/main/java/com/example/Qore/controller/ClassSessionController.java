@@ -5,7 +5,9 @@ import com.example.Qore.DTO.ClassSessionUpdateDTO;
 import com.example.Qore.DTO.ClientResponseDTO;
 import com.example.Qore.model.ClassSession;
 import com.example.Qore.service.ClassSessionService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -47,10 +49,33 @@ public class ClassSessionController {
     }
 
     @PutMapping("/{classId}/clients/{clientId}")
-    public ResponseEntity<String> addClientToClass(@PathVariable Long classId, @PathVariable Long clientId) {
-        service.addClientToClass(classId, clientId);
-        return ResponseEntity.ok("Client added to class successfully");
+    public ResponseEntity<Map<String, String>> addClientToClass(
+            @PathVariable Long classId,
+            @PathVariable Long clientId
+    ) {
+        try {
+            service.addClientToClass(classId, clientId);
+            return ResponseEntity.ok(Map.of("message", "Cliente agregado a la clase exitosamente"));
+        } catch (IllegalStateException | EntityNotFoundException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Error inesperado: " + e.getMessage()));
+        }
     }
+
+
+    @DeleteMapping("/{classId}/clients/{clientId}")
+    public ResponseEntity<Map<String, String>> removeClientFromClass(
+            @PathVariable Long classId,
+            @PathVariable Long clientId
+    ) {
+        service.removeClientFromClass(classId, clientId);
+        return ResponseEntity.ok(Map.of("message", "Client removed from class successfully"));
+    }
+
+
+
 
     @GetMapping("/weekly-count")
     public ResponseEntity<Map<String, Long>> getWeeklyClassCount() {
