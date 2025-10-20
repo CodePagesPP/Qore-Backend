@@ -57,4 +57,8 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
 
     @Query("SELECT c FROM ClassSession cs JOIN cs.clients c WHERE cs.id = :classId")
     List<Client> findClientsByClassId(@Param("classId") Long classId);
+
+    @Query("SELECT s FROM ClassSession s JOIN s.clients c WHERE c.id = :clientId")
+    List<ClassSession> findByClientId(@Param("clientId") Long clientId);
+
 }

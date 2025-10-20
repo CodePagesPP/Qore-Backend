@@ -3,6 +3,7 @@ package com.example.Qore.service.Impl;
 import com.example.Qore.DTO.*;
 import com.example.Qore.model.Client;
 import com.example.Qore.model.Discipline;
+import com.example.Qore.model.Enum.EstadoSession;
 import com.example.Qore.model.RoleE;
 import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.ClientRepository;
@@ -229,6 +230,20 @@ public class ClientServiceImpl implements ClientService {
 
         ClientEndingSoon dto = mapToDTOEnding(client);
 
+        boolean hasPlan = client.getPlan() != null;
+        LocalDate today = LocalDate.now();
+        boolean isExpired = dto.getSubscriptionEnd() != null && dto.getSubscriptionEnd().isBefore(today);
+        boolean hasRemainingClasses = dto.getClassesRemaining() > 0;
+
+
+        boolean allClassesDictated = classRepository.findByClientId(clientId)
+                .stream()
+                .allMatch(s -> s.getEstado().equals(EstadoSession.DICTADA));
+
+
+        boolean canPurchase = !hasPlan || isExpired || (hasPlan && !hasRemainingClasses && allClassesDictated);
+
+
         return ClientPlanInfoDTO.builder()
                 .id(dto.getId())
                 .name(dto.getName())
@@ -242,8 +257,10 @@ public class ClientServiceImpl implements ClientService {
                 .classesTaken(dto.getClassesTaken())
                 .classesRemaining(dto.getClassesRemaining())
                 .trialCompleted(client.isTrialCompleted())
+                .canPurchasePlan(canPurchase)
                 .build();
     }
+
 
 
     private ClientResponseDTO mapToDTO(Client user){

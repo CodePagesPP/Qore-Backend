@@ -24,5 +24,6 @@ public class ClientPlanInfoDTO {
     private long classesTaken;
     private long classesRemaining;
     private boolean trialCompleted;
+    private boolean canPurchasePlan;
 }
 

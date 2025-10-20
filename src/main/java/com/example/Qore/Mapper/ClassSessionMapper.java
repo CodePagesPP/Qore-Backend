@@ -35,6 +35,7 @@ public class ClassSessionMapper {
                 .repeatUntil(session.getRepeatUntil())
                 .repeatDays(session.getRepeatDays())
                 .repeatInterval(session.getRepeatInterval())
+                .comentario(session.getComentario())
                 .build();
     }
 

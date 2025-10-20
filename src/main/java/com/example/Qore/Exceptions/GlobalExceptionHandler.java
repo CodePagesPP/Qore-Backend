@@ -46,10 +46,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<Map<String, Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        return buildErrorResponse(
-                HttpStatus.BAD_REQUEST,
-                "Error de integridad de datos: " + ex.getMostSpecificCause().getMessage()
-        );
+        String message = ex.getMostSpecificCause().getMessage();
+
+        String readableMessage = "Error de integridad de datos";
+
+        if (message != null) {
+            message = message.toLowerCase();
+            if (message.contains("email")) {
+                readableMessage = "El email ya está en uso";
+            } else if (message.contains("dni")) {
+                readableMessage = "El DNI ya está en uso";
+            } else if (message.contains("phone_number")) {
+                readableMessage = "El número de teléfono ya está en uso";
+            } else if (message.contains("uk")) {
+                // Clave única genérica
+                readableMessage = "Uno de los valores ya está registrado en el sistema";
+            }
+        }
+
+        return buildErrorResponse(HttpStatus.BAD_REQUEST, readableMessage);
     }
 
 }

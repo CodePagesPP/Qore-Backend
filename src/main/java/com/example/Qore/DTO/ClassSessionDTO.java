@@ -31,7 +31,7 @@ public class ClassSessionDTO {
     private boolean repeat;
     private LocalDate repeatUntil; // hasta qué fecha repetir
 
-
+    private String comentario;
     private Set<DayOfWeek> repeatDays;// qué día repetir (MONDAY, TUESDAY...)
 
     private Integer repeatInterval;

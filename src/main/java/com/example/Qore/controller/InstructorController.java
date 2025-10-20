@@ -10,11 +10,13 @@ import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.InstructorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -67,7 +69,7 @@ public class InstructorController {
     }
 
     @PatchMapping("/{id}/comentario")
-    public ResponseEntity<ClassSessionComentarioDTO> updateComentario(
+    public ResponseEntity<?> updateComentario(
             @PathVariable Long id,
             @RequestBody Map<String, String> payload) {
 
@@ -76,20 +78,28 @@ public class InstructorController {
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
 
         if (!session.getEstado().equals(EstadoSession.DICTADA)) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body("La clase no está dictada");
+        }
+
+        if (session.getComentarioAt() != null &&
+                session.getComentarioAt().plusHours(24).isBefore(LocalDateTime.now())) {
+            return ResponseEntity.badRequest()
+                    .body("El tiempo para editar el comentario ha expirado");
         }
 
         session.setComentario(comentario);
+        session.setComentarioAt(LocalDateTime.now());
         classSessionRepository.save(session);
-
-        // devolver solo los campos que nos interesan
+        instructorService.sendComentarioNotificationEmail(session);
         ClassSessionComentarioDTO dto = new ClassSessionComentarioDTO(
                 session.getId(),
                 session.getComentario(),
-                session.getEstado()
+                session.getEstado(),
+                session.getComentarioAt()
         );
 
         return ResponseEntity.ok(dto);
     }
+
 
 }
