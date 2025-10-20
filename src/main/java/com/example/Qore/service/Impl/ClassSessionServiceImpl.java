@@ -33,6 +33,7 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     private final RoomRepository roomRepository;
     private final ClassSessionMapper mapper;
     private final EmailService emailService;
+    private final UserRepository userRepository;
 
     @Override
     public List<ClassSessionDTO> getAll() {
@@ -378,55 +379,111 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        // 1️⃣ Validar si la clase ya pasó
         LocalDate today = LocalDate.now();
         LocalTime now = LocalTime.now();
 
-        // Si la clase es de una fecha anterior o del mismo día pero ya terminó
         if (session.getStartDate().isBefore(today)
                 || (session.getStartDate().isEqual(today) && session.getEndTime().isBefore(now))) {
             throw new RuntimeException("No puedes unirte a una clase pasada.");
         }
 
-        // 2️⃣ Validar capacidad
         if (session.getClients().size() >= session.getCapacity()) {
             throw new RuntimeException("La clase ya alcanzó su capacidad máxima");
         }
 
-        // 3️⃣ Validar que no esté ya inscrito
         if (session.getClients().contains(client)) {
             throw new RuntimeException("El cliente ya está inscrito en esta clase");
         }
 
-        // 4️⃣ Validar plan activo
         if (client.getPlan() == null) {
             throw new RuntimeException("El cliente no cuenta con un plan activo");
         }
 
-        // 5️⃣ Inicializar fechas de suscripción si es la primera clase
         if (client.getSubscriptionStart() == null || client.getSubscriptionEnd() == null) {
             LocalDate startDate = session.getStartDate();
             int durationDays = client.getPlan().getDuration();
             LocalDate endDate = startDate.plusDays(durationDays);
-
             client.setSubscriptionStart(startDate);
             client.setSubscriptionEnd(endDate);
             clientRepository.save(client);
         }
 
-        // 6️⃣ Validar vencimiento de plan
         if (isPlanExpired(client)) {
             throw new RuntimeException("Tu plan ha vencido. Por favor renueva para continuar asistiendo a clases.");
         }
 
-        // 7️⃣ Validar clases restantes
         if (isClassesExhausted(client)) {
             throw new RuntimeException("Has utilizado todas las clases disponibles en tu plan.");
         }
 
-        // 8️⃣ Agregar cliente a la clase
         session.getClients().add(client);
-        return repository.save(session);
+        ClassSession saved = repository.save(session);
+
+        // 📨 Notificar a instructor, managers y staff
+        sendJoinNotification(saved, client);
+
+        return saved;
+    }
+
+    private void sendJoinNotification(ClassSession session, Client client) {
+        String subject = "Nuevo cliente inscrito en la clase: " + session.getName();
+
+        String htmlTemplate = """
+        <div style="font-family: Arial, sans-serif; color: #333;">
+            <h2 style="color:#5C6BC0;">Nuevo cliente inscrito 🧘‍♂️</h2>
+            <p>Se ha inscrito un nuevo cliente a la clase <strong>%s</strong>.</p>
+            
+            <h3>🧾 Detalles del cliente:</h3>
+            <ul>
+                <li><b>Nombre:</b> %s %s</li>
+                <li><b>Email:</b> %s</li>
+            </ul>
+            
+            <h3>📅 Detalles de la clase:</h3>
+            <ul>
+                <li><b>Disciplina:</b> %s</li>
+                <li><b>Instructor:</b> %s</li>
+                <li><b>Fecha:</b> %s</li>
+                <li><b>Horario:</b> %s - %s</li>
+                <li><b>Sala:</b> %s</li>
+                <li><b>Inscritos:</b> %d / %d</li>
+            </ul>
+            
+            <hr>
+            <p style="font-size:0.9em;color:#777;">Atentamente,<br>Equipo Qore</p>
+        </div>
+    """;
+
+        String htmlBody = String.format(
+                htmlTemplate,
+                session.getName(),
+                client.getName(), client.getLastName(),
+                client.getEmail(),
+                session.getDiscipline().getName(),
+                session.getInstructor().getName(),
+                session.getStartDate(),
+                session.getStartTime(),
+                session.getEndTime(),
+                session.getRoom().getName(),
+                session.getClients().size(),
+                session.getCapacity()
+        );
+
+        // 1️⃣ Enviar al Instructor (User)
+        if (session.getInstructor() != null && session.getInstructor().getEmail() != null) {
+            emailService.sendHtmlEmail(session.getInstructor().getEmail(), subject, htmlBody);
+        }
+
+        // 2️⃣ Enviar a todos los Managers y Staff
+        List<User> managersAndStaff = userRepository.findAll().stream()
+                .filter(u -> u instanceof Manager || u instanceof Staff)
+                .toList();
+
+        for (User u : managersAndStaff) {
+            if (u.getEmail() != null && !u.getEmail().isBlank()) {
+                emailService.sendHtmlEmail(u.getEmail(), subject, htmlBody);
+            }
+        }
     }
 
 
