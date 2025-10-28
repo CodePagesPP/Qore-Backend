@@ -53,18 +53,26 @@ public class ExcelController {
 
     @GetMapping("/report/clients")
     public ResponseEntity<InputStreamResource> downloadClientsExcel() throws IOException {
-        // trae TODOS los clientes
-        List<Client> clients = clientRepository.findAllWithPlan();
+        try {
+            System.out.println("📘 Generando Excel de clientes...");
+            List<Client> clients = clientRepository.findAllWithPlan();
+            System.out.println("✅ Total clientes encontrados: " + clients.size());
 
-        ByteArrayInputStream excelStream = excelReportService.generateAllClientsReport(clients);
+            ByteArrayInputStream excelStream = excelReportService.generateAllClientsReport(clients);
+            System.out.println("💾 Excel generado correctamente.");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Disposition", "attachment; filename=all-clients.xlsx");
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Disposition", "attachment; filename=all-clients.xlsx");
 
-        return ResponseEntity
-                .ok()
-                .headers(headers)
-                .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
-                .body(new InputStreamResource(excelStream));
+            return ResponseEntity
+                    .ok()
+                    .headers(headers)
+                    .contentType(MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                    .body(new InputStreamResource(excelStream));
+        } catch (Exception e) {
+            System.err.println("❌ Error generando Excel: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
+        }
     }
 }
