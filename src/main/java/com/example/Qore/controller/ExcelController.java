@@ -54,12 +54,12 @@ public class ExcelController {
     @GetMapping("/report/clients")
     public ResponseEntity<InputStreamResource> downloadClientsExcel() throws IOException {
         try {
-            System.out.println("📘 Generando Excel de clientes...");
+            System.out.println("Generando Excel de clientes...");
             List<Client> clients = clientRepository.findAllWithPlan();
-            System.out.println("✅ Total clientes encontrados: " + clients.size());
+            System.out.println("Total clientes encontrados: " + clients.size());
 
             ByteArrayInputStream excelStream = excelReportService.generateAllClientsReport(clients);
-            System.out.println("💾 Excel generado correctamente.");
+            System.out.println("Excel generado correctamente.");
 
             HttpHeaders headers = new HttpHeaders();
             headers.add("Content-Disposition", "attachment; filename=all-clients.xlsx");
