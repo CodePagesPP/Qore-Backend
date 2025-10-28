@@ -40,4 +40,8 @@ public interface ClientRepository extends JpaRepository<Client,Long> {
     List<Object[]> countClientsByMonth();
 
     List<Client> findBySubscriptionEndBefore(LocalDate date);
+
+    @Query("SELECT c FROM Client c LEFT JOIN FETCH c.plan")
+    List<Client> findAllWithPlan();
+
 }

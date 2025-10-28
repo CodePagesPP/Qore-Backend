@@ -54,7 +54,7 @@ public class ExcelController {
     @GetMapping("/report/clients")
     public ResponseEntity<InputStreamResource> downloadClientsExcel() throws IOException {
         // trae TODOS los clientes
-        List<Client> clients = clientRepository.findAll();
+        List<Client> clients = clientRepository.findAllWithPlan();
 
         ByteArrayInputStream excelStream = excelReportService.generateAllClientsReport(clients);
 
