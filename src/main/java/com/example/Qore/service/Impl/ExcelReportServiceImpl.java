@@ -173,10 +173,6 @@ public class ExcelReportServiceImpl implements ExcelReportService {
                 }
             }
 
-            for (int i = 0; i < columns.length; i++) {
-                sheet.autoSizeColumn(i);
-            }
-
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             workbook.write(out);
             System.out.println("Excel generado correctamente (" + (rowIdx - 1) + " filas).");
