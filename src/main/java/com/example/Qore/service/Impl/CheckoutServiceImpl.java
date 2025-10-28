@@ -37,9 +37,9 @@ public class CheckoutServiceImpl implements CheckoutService {
             String externalRef = "type:one_time|client:" + client.getId() + "|plan:" + plan.getId();
 
             var backUrls = com.mercadopago.client.preference.PreferenceBackUrlsRequest.builder()
-                    .success("https://as-mg-proper-photographic.trycloudflare.com/payment-success")
-                    .pending("https://as-mg-proper-photographic.trycloudflare.com/payment-pending")
-                    .failure("https://as-mg-proper-photographic.trycloudflare.com/payment-failure")
+                    .success("https://qorewellnesslab.com/payment-success")
+                    .pending("https://qorewellnesslab.com/payment-pending")
+                    .failure("https://qorewellnesslab.com/payment-failure")
                     .build();
 
             var prefReq = com.mercadopago.client.preference.PreferenceRequest.builder()
@@ -52,7 +52,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .externalReference(externalRef)
                     .notificationUrl(notificationUrl)
                     .backUrls(backUrls)
-                    //.autoReturn("approved") descomentar al despliegue
+                    .autoReturn("approved")
                     .build();
 
             var prefClient = new com.mercadopago.client.preference.PreferenceClient();
