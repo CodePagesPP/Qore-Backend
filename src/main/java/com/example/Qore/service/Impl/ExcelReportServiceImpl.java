@@ -150,7 +150,11 @@ public class ExcelReportServiceImpl implements ExcelReportService {
                 row.createCell(8).setCellValue(c.getCity() != null ? c.getCity() : "");
                 row.createCell(9).setCellValue(c.getAddress() != null ? c.getAddress() : "");
                 row.createCell(10).setCellValue(c.getBirthday() != null ? c.getBirthday().toString() : "");
-                row.createCell(11).setCellValue(c.getPlan() != null ? c.getPlan().getName() : "");
+                String planName = "";
+                if (c.getPlan() != null && c.getPlan().getName() != null) {
+                    planName = c.getPlan().getName();
+                }
+                row.createCell(11).setCellValue(planName);
                 row.createCell(12).setCellValue(c.getSubscriptionStart() != null ? c.getSubscriptionStart().toString() : "");
                 row.createCell(13).setCellValue(c.getSubscriptionEnd() != null ? c.getSubscriptionEnd().toString() : "");
             }
