@@ -32,4 +32,7 @@ public class ClientResponseDTO {
     private List<Discipline> disciplines;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private PlanResponseDTO plan;
+    private LocalDate subscriptionStart;
+    private LocalDate subscriptionEnd;
 }

@@ -11,7 +11,9 @@ import com.example.Qore.repository.*;
 import com.example.Qore.service.ClassSessionService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -33,11 +35,22 @@ public class ClassSessionServiceImpl implements ClassSessionService {
     private final RoomRepository roomRepository;
     private final ClassSessionMapper mapper;
     private final EmailService emailService;
-    private final UserRepository userRepository;
+    private final NotificationServiceImpl notificationService;
 
     @Override
     public List<ClassSessionDTO> getAll() {
         return repository.findAll().stream().map(mapper::toDTO).collect(Collectors.toList());
+    }
+
+    @Override
+    public List<ClassSessionDTO> getClassesByDateRange(String startStr, String endStr) {
+        LocalDate start = LocalDate.parse(startStr);
+        LocalDate end = LocalDate.parse(endStr);
+
+        return repository.findByStartDateBetween(start, end)
+                .stream()
+                .map(mapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -116,11 +129,26 @@ public class ClassSessionServiceImpl implements ClassSessionService {
 
 
     @Override
-    public List<ClassSessionDTO> getClassesByInstructor(Long instructorId) {
-        List<ClassSession> sessions = repository.findByInstructorIdOrderByStartDateAscStartTimeAsc(instructorId);
-        return sessions.stream()
-                .map(mapper::toDTO)
-                .toList();
+    public List<ClassSessionDTO> getClassesByInstructor(Long instructorId, LocalDate start, LocalDate end) {
+        List<ClassSession> sessions = repository.findByInstructorAndDateRange(instructorId, start, end);
+
+        return sessions.stream().map(s -> {
+            // Mapeo manual rápido (o usa tu mapper si lo actualizas)
+            return ClassSessionDTO.builder()
+                    .id(s.getId())
+                    .name(s.getName())
+                    .disciplineId(s.getDiscipline().getId())
+                    .instructorId(s.getInstructor().getId())
+                    .roomId(s.getRoom().getId())
+                    .capacity(s.getCapacity())
+                    .estado(s.getEstado().name())
+                    .startDate(s.getStartDate())
+                    .startTime(s.getStartTime())
+                    .endTime(s.getEndTime())
+                    .comentario(s.getComentario())
+                    .currentCount(s.getClients().size())
+                    .build();
+        }).toList();
     }
 
     @Override
@@ -341,12 +369,17 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         );
     }
 
-
-    public List<ClassSessionDTO> getClassesForClient(Long clientId) {
+    @Override
+    public List<ClassSessionDTO> getClassesForClient(Long clientId, LocalDate start, LocalDate end) {
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        List<ClassSession> sessions = repository.findByDisciplineIn(client.getDisciplines());
+
+        List<ClassSession> sessions = repository.findByDisciplinesAndDateRange(
+                client.getDisciplines(),
+                start,
+                end
+        );
 
         return sessions.stream().map(s -> {
             ClassSessionDTO dto = new ClassSessionDTO();
@@ -359,19 +392,23 @@ public class ClassSessionServiceImpl implements ClassSessionService {
             dto.setEstado(s.getEstado().name());
             dto.setDisciplineId(s.getDiscipline().getId());
             dto.setInstructorId(s.getInstructor().getId());
-            dto.setClientIds(
-                    s.getClients().stream()
-                            .map(Client::getId)
-                            .collect(Collectors.toSet())
-            );
             dto.setRoomId(s.getRoom().getId());
+
+
+            dto.setClientIds(
+                    s.getClients().stream().map(Client::getId).collect(Collectors.toSet())
+            );
+
+
             dto.setJoined(s.getClients().contains(client));
+
             return dto;
         }).collect(Collectors.toList());
     }
 
 
     @Override
+    @Transactional
     public ClassSession joinClassClient(Long classId, Long clientId) {
         ClassSession session = repository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
@@ -419,71 +456,10 @@ public class ClassSessionServiceImpl implements ClassSessionService {
         session.getClients().add(client);
         ClassSession saved = repository.save(session);
 
-        // 📨 Notificar a instructor, managers y staff
-        sendJoinNotification(saved, client);
+
+        notificationService.sendJoinNotification(saved, client);
 
         return saved;
-    }
-
-    private void sendJoinNotification(ClassSession session, Client client) {
-        String subject = "Nuevo cliente inscrito en la clase: " + session.getName();
-
-        String htmlTemplate = """
-        <div style="font-family: Arial, sans-serif; color: #333;">
-            <h2 style="color:#5C6BC0;">Nuevo cliente inscrito 🧘‍♂️</h2>
-            <p>Se ha inscrito un nuevo cliente a la clase <strong>%s</strong>.</p>
-            
-            <h3>🧾 Detalles del cliente:</h3>
-            <ul>
-                <li><b>Nombre:</b> %s %s</li>
-                <li><b>Email:</b> %s</li>
-            </ul>
-            
-            <h3>📅 Detalles de la clase:</h3>
-            <ul>
-                <li><b>Disciplina:</b> %s</li>
-                <li><b>Instructor:</b> %s</li>
-                <li><b>Fecha:</b> %s</li>
-                <li><b>Horario:</b> %s - %s</li>
-                <li><b>Sala:</b> %s</li>
-                <li><b>Inscritos:</b> %d / %d</li>
-            </ul>
-            
-            <hr>
-            <p style="font-size:0.9em;color:#777;">Atentamente,<br>Equipo Qore</p>
-        </div>
-    """;
-
-        String htmlBody = String.format(
-                htmlTemplate,
-                session.getName(),
-                client.getName(), client.getLastName(),
-                client.getEmail(),
-                session.getDiscipline().getName(),
-                session.getInstructor().getName(),
-                session.getStartDate(),
-                session.getStartTime(),
-                session.getEndTime(),
-                session.getRoom().getName(),
-                session.getClients().size(),
-                session.getCapacity()
-        );
-
-        // 1️⃣ Enviar al Instructor (User)
-        if (session.getInstructor() != null && session.getInstructor().getEmail() != null) {
-            emailService.sendHtmlEmail(session.getInstructor().getEmail(), subject, htmlBody);
-        }
-
-        // 2️⃣ Enviar a todos los Managers y Staff
-        List<User> managersAndStaff = userRepository.findAll().stream()
-                .filter(u -> u instanceof Manager || u instanceof Staff)
-                .toList();
-
-        for (User u : managersAndStaff) {
-            if (u.getEmail() != null && !u.getEmail().isBlank()) {
-                emailService.sendHtmlEmail(u.getEmail(), subject, htmlBody);
-            }
-        }
     }
 
 

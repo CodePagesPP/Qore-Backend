@@ -36,5 +36,6 @@ public class ClassSessionDTO {
 
     private Integer repeatInterval;
     private Set<Long> clientIds;
+    private int currentCount;
     private boolean joined;
 }

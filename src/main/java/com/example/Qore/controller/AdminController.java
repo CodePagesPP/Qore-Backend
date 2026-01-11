@@ -1,12 +1,17 @@
 package com.example.Qore.controller;
 
 import com.example.Qore.DTO.*;
+import com.example.Qore.model.Client;
 import com.example.Qore.model.User;
+import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.repository.UserRepository;
 import com.example.Qore.service.*;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -28,12 +33,25 @@ public class AdminController {
     private final ClientService clientService;
 
     private final ManagerService managerService;
-    private final UserRepository userRepository;
 
     //Listar clientes
     @GetMapping("/clients")
-    public ResponseEntity<List<ClientResponseDTO>> getAllClients() {
-        return ResponseEntity.ok(clientService.getAllActiveClients());
+    public ResponseEntity<Page<ClientResponseDTO>> getAllClients(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "") String search // Nuevo parámetro
+    ) {
+
+        if (search == null || search.trim().isEmpty()) {
+            return ResponseEntity.ok(clientService.getAllActiveClients(page, size));
+        } else {
+            return ResponseEntity.ok(clientService.searchClients(search, page, size));
+        }
+    }
+
+    @GetMapping("/clients/discipline/{id}")
+    public ResponseEntity<List<ClientResponseDTO>> getClientsByDiscipline(@PathVariable Long id) {
+        return ResponseEntity.ok(clientService.getClientsByDiscipline(id));
     }
 
     @GetMapping("/listAdmin")

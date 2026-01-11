@@ -1,17 +1,18 @@
 package com.example.Qore.service.Impl;
 
 import com.example.Qore.DTO.*;
-import com.example.Qore.model.Client;
-import com.example.Qore.model.Discipline;
+import com.example.Qore.model.*;
 import com.example.Qore.model.Enum.EstadoSession;
-import com.example.Qore.model.RoleE;
-import com.example.Qore.repository.ClassSessionRepository;
-import com.example.Qore.repository.ClientRepository;
-import com.example.Qore.repository.DisciplineRepository;
-import com.example.Qore.repository.RoleRepository;
+import com.example.Qore.model.payment.Payment;
+import com.example.Qore.repository.*;
 import com.example.Qore.service.ClientService;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,16 +22,20 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ClientServiceImpl implements ClientService {
     private final ClientRepository userRepository;
+    private final PlanRepository planRepository;
+    private final ClientPlanHistoryRepository clientPlanHistoryRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
     private final ClassSessionRepository classRepository;
     private final DisciplineRepository disciplineRepository;
+    private final PaymentRepository paymentRepository;
     @Override
     public ClientResponseDTO registerClient(ClientRegisterDTO dto) {
 
@@ -75,10 +80,90 @@ public class ClientServiceImpl implements ClientService {
     }
 
     @Override
-    public List<ClientResponseDTO> getAllActiveClients() {
-        return userRepository.findActiveClientsByRoleName("CLIENT").stream()
+    public Page<ClientResponseDTO> getAllActiveClients(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        Page<Client> clientPage = userRepository.findActiveClientsByRoleName("CLIENT", pageable);
+
+
+        return clientPage.map(this::mapToDTO);
+    }
+
+    @Override
+    public Page<ClientResponseDTO> searchClients(String search, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+        return userRepository.searchClients(search, pageable)
+                .map(this::mapToDTO);
+    }
+
+    @Override
+    public List<ClientResponseDTO> getClientsByDiscipline(Long disciplineId) {
+        return userRepository.findActiveClientsByDiscipline(disciplineId)
+                .stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
+    }
+
+
+    @Transactional
+    @Override
+    public void assignPlanManually(Long clientId, Long planId, String paymentMethod) {
+        Client client = userRepository.findById(clientId)
+                .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+
+        if (!client.isTrialCompleted()) {
+            throw new IllegalStateException("No se puede asignar un plan. El cliente aún no ha completado su clase de prueba.");
+        }
+
+        Plan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new EntityNotFoundException("Plan no encontrado"));
+
+
+        LocalDate start = LocalDate.now();
+        LocalDate end = start.plusDays(plan.getDuration());
+
+
+        client.setPlan(plan);
+        client.setSubscriptionStart(start);
+        client.setSubscriptionEnd(end);
+        client.setActive(true);
+        userRepository.save(client);
+
+
+        ClientPlanHistory history = ClientPlanHistory.builder()
+                .client(client)
+                .planName(plan.getName())
+                .startDate(start)
+                .endDate(end)
+                .pricePaid(plan.getPrice())
+                .assignedAt(LocalDateTime.now())
+                .assignedBy("MANUAL")
+                .paymentMethod(paymentMethod)
+                .build();
+
+        clientPlanHistoryRepository.save(history);
+
+        String fakePaymentId = "MANUAL-" + UUID.randomUUID().toString();
+        Payment manualPayment = Payment.builder()
+                .client(client)
+                .plan(plan)
+                .amount(plan.getPrice())
+                .status("approved")
+                .paymentDate(LocalDateTime.now())
+                .mpPaymentId(fakePaymentId)
+                .subscriptionId("MANUAL_SUBSCRIPTION")
+                .paymentMethod(paymentMethod)
+                .build();
+
+        paymentRepository.save(manualPayment);
+    }
+
+    @Override
+    public List<ClientPlanHistoryDTO> getHistoryByClient(Long clientId) {
+
+        return clientPlanHistoryRepository.findByClientIdOrderByAssignedAtDesc(clientId)
+                .stream().map(this::mapHistoryToDTO).collect(Collectors.toList());
     }
 
     @Override
@@ -281,6 +366,18 @@ public class ClientServiceImpl implements ClientService {
                 .trialCompleted(user.isTrialCompleted())
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .plan(user.getPlan() != null ? mapPlanToDTO(user.getPlan()) : null)
+                .subscriptionStart(user.getSubscriptionStart())
+                .subscriptionEnd(user.getSubscriptionEnd())
+                .build();
+    }
+
+    private PlanResponseDTO mapPlanToDTO(Plan plan) {
+        return PlanResponseDTO.builder()
+                .id(plan.getId())
+                .name(plan.getName())
+                .price(plan.getPrice())
+                .duration(plan.getDuration())
                 .build();
     }
 
@@ -310,6 +407,23 @@ public class ClientServiceImpl implements ClientService {
                 .totalClasses(totalClasses)
                 .classesTaken(classesTaken)
                 .classesRemaining(classesRemaining)
+                .build();
+    }
+
+    private ClientPlanHistoryDTO mapHistoryToDTO(ClientPlanHistory history) {
+        if (history == null) {
+            return null;
+        }
+
+        return ClientPlanHistoryDTO.builder()
+                .id(history.getId())
+                .planName(history.getPlanName())
+                .startDate(history.getStartDate())
+                .endDate(history.getEndDate())
+                .pricePaid(history.getPricePaid())
+                .assignedAt(history.getAssignedAt())
+                .assignedBy(history.getAssignedBy())
+                .paymentMethod(history.getPaymentMethod())
                 .build();
     }
 }

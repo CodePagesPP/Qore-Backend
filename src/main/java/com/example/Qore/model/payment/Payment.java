@@ -48,4 +48,6 @@ public class Payment {
 
 
     private String subscriptionId;
+
+    private String paymentMethod;
 }

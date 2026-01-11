@@ -54,6 +54,21 @@ public class ClientController {
         return ResponseEntity.ok(clientService.updateClient(id, dto));
     }
 
+    @PostMapping("/{clientId}/assign-plan/{planId}")
+    public ResponseEntity<Void> assignPlan(
+            @PathVariable Long clientId,
+            @PathVariable Long planId,
+            @RequestParam String paymentMethod) {
+
+        clientService.assignPlanManually(clientId, planId, paymentMethod);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{clientId}/history")
+    public ResponseEntity<List<ClientPlanHistoryDTO>> getClientHistory(@PathVariable Long clientId) {
+        return ResponseEntity.ok(clientService.getHistoryByClient(clientId));
+    }
+
     @DeleteMapping("/client/{id}")
     public ResponseEntity<Void> disableClient(@PathVariable String id) {
         clientService.disableClient(id);

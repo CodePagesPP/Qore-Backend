@@ -77,7 +77,7 @@ public class ClassSession {
     @Column(name = "repeat_until")
     private LocalDate repeatUntil; // hasta qué fecha repetir
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(name = "class_repeat_days", joinColumns = @JoinColumn(name = "class_id"))
     @Column(name = "day_of_week")
     @Enumerated(EnumType.STRING)

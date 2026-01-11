@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,13 @@ public class ClassSessionController {
     @GetMapping("/getAll")
     public List<ClassSessionDTO> getAll() {
         return service.getAll();
+    }
+
+    @GetMapping("/range")
+    public ResponseEntity<List<ClassSessionDTO>> getClassesByRange(
+            @RequestParam("start") String start,
+            @RequestParam("end") String end) {
+        return ResponseEntity.ok(service.getClassesByDateRange(start, end));
     }
 
     @GetMapping("/getById/{id}")
@@ -87,8 +95,15 @@ public class ClassSessionController {
     }
 
     @GetMapping("/instructor/{instructorId}")
-    public ResponseEntity<List<ClassSessionDTO>> getByInstructor(@PathVariable Long instructorId) {
-        List<ClassSessionDTO> sessions = service.getClassesByInstructor(instructorId);
+    public ResponseEntity<List<ClassSessionDTO>> getByInstructor(
+            @PathVariable Long instructorId,
+            @RequestParam("start") String startStr,
+            @RequestParam("end") String endStr
+    ) {
+        LocalDate start = LocalDate.parse(startStr);
+        LocalDate end = LocalDate.parse(endStr);
+
+        List<ClassSessionDTO> sessions = service.getClassesByInstructor(instructorId, start, end);
         return ResponseEntity.ok(sessions);
     }
 
@@ -98,8 +113,14 @@ public class ClassSessionController {
     }
 
     @GetMapping("/client/{clientId}")
-    public ResponseEntity<List<ClassSessionDTO>> getClassesByClient(@PathVariable Long clientId) {
-        return ResponseEntity.ok(service.getClassesForClient(clientId));
+    public ResponseEntity<List<ClassSessionDTO>> getClassesByClient(
+            @PathVariable Long clientId,
+            @RequestParam("start") String startStr,
+            @RequestParam("end") String endStr
+    ) {
+        LocalDate start = LocalDate.parse(startStr);
+        LocalDate end = LocalDate.parse(endStr);
+        return ResponseEntity.ok(service.getClassesForClient(clientId, start, end));
     }
 
     @PostMapping("/{classId}/join/{clientId}")

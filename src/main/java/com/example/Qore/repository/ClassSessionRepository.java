@@ -16,7 +16,12 @@ import java.util.List;
 public interface ClassSessionRepository extends JpaRepository<ClassSession, Long> {
     boolean existsByRoomId(Long roomId);
     List<ClassSession> findByClients_Id(Long clientId);
-
+    @Query("SELECT DISTINCT c FROM ClassSession c " +
+            "LEFT JOIN FETCH c.repeatDays " +
+            "LEFT JOIN FETCH c.clients " +
+            "WHERE c.startDate BETWEEN :start AND :end")
+    List<ClassSession> findByStartDateBetween(@Param("start") LocalDate start,
+                                              @Param("end") LocalDate end);
     @Query("SELECT COUNT(c) FROM ClassSession c " +
             "WHERE c.startDate BETWEEN :start AND :end")
     long countClassesBetween(@Param("start") LocalDate start, @Param("end") LocalDate end);
@@ -48,13 +53,36 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
     );
 
     List<ClassSession> findByInstructorIdOrderByStartDateAscStartTimeAsc(Long instructorId);
+    @Query("SELECT DISTINCT c FROM ClassSession c " +
+            "JOIN FETCH c.discipline " +
+            "JOIN FETCH c.room " +
+            "LEFT JOIN FETCH c.clients " +
+            "WHERE c.instructor.id = :instructorId " +
+            "AND c.startDate BETWEEN :start AND :end " +
+            "ORDER BY c.startDate ASC, c.startTime ASC")
+    List<ClassSession> findByInstructorAndDateRange(
+            @Param("instructorId") Long instructorId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
     long countByInstructorIdAndStartDateBetweenAndEstado(
             Long instructorId, LocalDate start, LocalDate end, EstadoSession estado);
     List<ClassSession> findByInstructorIdAndStartDateAndEstado(
             Long instructorId, LocalDate startDate, EstadoSession estado);
 
-    List<ClassSession> findByDisciplineIn(List<Discipline> disciplines);
 
+    @Query("SELECT DISTINCT c FROM ClassSession c " +
+            "JOIN FETCH c.discipline " +
+            "JOIN FETCH c.instructor " +
+            "JOIN FETCH c.room " +
+            "LEFT JOIN FETCH c.clients " +
+            "WHERE c.discipline IN :disciplines " +
+            "AND c.startDate BETWEEN :start AND :end")
+    List<ClassSession> findByDisciplinesAndDateRange(
+            @Param("disciplines") List<Discipline> disciplines,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end
+    );
     @Query("SELECT c FROM ClassSession cs JOIN cs.clients c WHERE cs.id = :classId")
     List<Client> findClientsByClassId(@Param("classId") Long classId);
 
