@@ -20,4 +20,7 @@ public class ClientClassDTO {
     private LocalDate startDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private String disciplineName;
+    private String status;
+    private String attendance;
 }

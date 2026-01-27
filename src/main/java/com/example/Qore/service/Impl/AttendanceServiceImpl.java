@@ -9,6 +9,7 @@ import com.example.Qore.repository.AttendanceRepository;
 import com.example.Qore.repository.ClassSessionRepository;
 import com.example.Qore.repository.ClientRepository;
 import com.example.Qore.service.AttendanceService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -36,25 +37,36 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
 
-    public void markAttendance(Long classId, Long clientId, AttendanceStatus status) {
+    @Transactional
+    public void markAttendance(Long classId, Long clientId, String statusStr) { // Recibe String
+
         ClassSession session = classSessionRepository.findById(classId)
                 .orElseThrow(() -> new RuntimeException("Clase no encontrada"));
+
         Client client = clientRepository.findById(clientId)
                 .orElseThrow(() -> new RuntimeException("Cliente no encontrado"));
 
-        LocalDate today = LocalDate.now();
 
-        // usa el método del repo para buscar si ya existe
+        LocalDate classDate = session.getStartDate();
+
+
         Optional<Attendance> existing = attendanceRepository
-                .findByClassSessionIdAndClientIdAndDate(classId, clientId, today);
+                .findByClassSessionIdAndClientIdAndDate(classId, clientId, classDate);
+
+
+        if ("PENDIENTE".equals(statusStr)) {
+            existing.ifPresent(attendanceRepository::delete);
+            return;
+        }
 
         Attendance attendance = existing.orElseGet(Attendance::new);
 
         attendance.setClassSession(session);
         attendance.setClient(client);
-        attendance.setDate(today);
-        attendance.setStatus(status);
+        attendance.setDate(classDate);
 
-        attendanceRepository.save(attendance);
+        attendance.setStatus(AttendanceStatus.valueOf(statusStr));
+
+        attendanceRepository.saveAndFlush(attendance);
     }
 }

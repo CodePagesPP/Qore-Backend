@@ -89,4 +89,17 @@ public interface ClassSessionRepository extends JpaRepository<ClassSession, Long
     @Query("SELECT s FROM ClassSession s JOIN s.clients c WHERE c.id = :clientId")
     List<ClassSession> findByClientId(@Param("clientId") Long clientId);
 
+    @Query("SELECT c FROM ClassSession c " +
+            "JOIN c.clients cl " +
+            "JOIN FETCH c.instructor " +
+            "JOIN FETCH c.discipline " +
+            "WHERE cl.id = :clientId " +
+            "AND c.startDate BETWEEN :startDate AND :endDate " +
+            "ORDER BY c.startDate DESC, c.startTime DESC")
+    List<ClassSession> findJoinedClassesByClientAndDateRange(
+            @Param("clientId") Long clientId,
+            @Param("startDate") LocalDate startDate,
+            @Param("endDate") LocalDate endDate
+    );
+
 }

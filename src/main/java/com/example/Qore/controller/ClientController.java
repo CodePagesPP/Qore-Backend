@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -54,13 +55,15 @@ public class ClientController {
         return ResponseEntity.ok(clientService.updateClient(id, dto));
     }
 
+
     @PostMapping("/{clientId}/assign-plan/{planId}")
     public ResponseEntity<Void> assignPlan(
             @PathVariable Long clientId,
             @PathVariable Long planId,
-            @RequestParam String paymentMethod) {
+            @RequestParam String paymentMethod,
+            @RequestParam(required = false, defaultValue = "0") BigDecimal discount) {
 
-        clientService.assignPlanManually(clientId, planId, paymentMethod);
+        clientService.assignPlanManually(clientId, planId, paymentMethod, discount);
         return ResponseEntity.ok().build();
     }
 
@@ -160,6 +163,18 @@ public class ClientController {
         response.put("trialCompleted", client.isTrialCompleted());
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{clientId}/classes-history")
+    public ResponseEntity<List<ClientClassDTO>> getClientClassesHistory(
+            @PathVariable Long clientId,
+            @RequestParam String startDate,
+            @RequestParam(required = false) String endDate
+    ) {
+        LocalDate start = LocalDate.parse(startDate);
+        LocalDate end = endDate != null ? LocalDate.parse(endDate) : LocalDate.now(); // O manejar null en el servicio
+
+        return ResponseEntity.ok(clientService.getClassesByClientHistory(clientId, start, end));
     }
 
 }

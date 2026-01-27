@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface AttendanceService {
     List<AttendanceDTO> getByClassDTO(Long classId);
-    void markAttendance(Long classId, Long clientId, AttendanceStatus status);
+    void markAttendance(Long classId, Long clientId, String statusStr);
 }

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 public interface ClientService {
@@ -16,14 +18,14 @@ public interface ClientService {
     void disableClient(String id);
     List<ClientResponseDTO> getClientsWithBirthdayInNextWeek();
     List<ClientPlanHistoryDTO> getHistoryByClient(Long clientId);
-    void assignPlanManually(Long clientId, Long planId, String paymentMethod);
+    void assignPlanManually(Long clientId, Long planId, String paymentMethod, BigDecimal discount);
     Page<ClientResponseDTO> searchClients(String search, int page, int size);
     List<ClientEndingSoon> getClientsWithSubscriptionEndingSoon();
     List<ClientResponseDTO> getClientsByDiscipline(Long disciplineId);
     List<ClientRegisterNewDTO> getClientsRegisteredInMonth(Integer month, Integer year);
 
     List<ClientRegistrationStats> getClientRegistrationsByMonth();
-
+    List<ClientClassDTO> getClassesByClientHistory(Long clientId, LocalDate startDate, LocalDate endDate);
     List<ClientSubscriptionEndedDTO> getClientsWithSubscriptionEndedMoreThanTwoMonths();
     long countClientsWithSubscriptionEndedMoreThanTwoMonths();
     ClientPlanInfoDTO getClientPlanInfo(Long clientId);

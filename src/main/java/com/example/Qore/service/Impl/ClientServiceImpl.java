@@ -16,12 +16,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -36,6 +38,7 @@ public class ClientServiceImpl implements ClientService {
     private final ClassSessionRepository classRepository;
     private final DisciplineRepository disciplineRepository;
     private final PaymentRepository paymentRepository;
+    private final AttendanceRepository attendanceRepository;
     @Override
     public ClientResponseDTO registerClient(ClientRegisterDTO dto) {
 
@@ -90,6 +93,43 @@ public class ClientServiceImpl implements ClientService {
         return clientPage.map(this::mapToDTO);
     }
 
+
+    public List<ClientClassDTO> getClassesByClientHistory(Long clientId, LocalDate startDate, LocalDate endDate) {
+        if (endDate == null) {
+            endDate = LocalDate.now().plusYears(100);
+        }
+
+        List<ClassSession> sessions = classRepository.findJoinedClassesByClientAndDateRange(clientId, startDate, endDate);
+
+
+        List<Attendance> attendances = attendanceRepository.findByClientIdAndDateBetween(clientId, startDate, endDate);
+
+
+        Map<Long, String> attendanceMap = attendances.stream()
+                .collect(Collectors.toMap(
+                        a -> a.getClassSession().getId(),
+                        a -> a.getStatus().name(),
+                        (existing, replacement) -> existing
+                ));
+
+
+        return sessions.stream().map(s -> {
+            ClientClassDTO dto = new ClientClassDTO();
+            dto.setId(s.getId());
+            dto.setName(s.getName());
+            dto.setStartDate(s.getStartDate());
+            dto.setStartTime(s.getStartTime());
+            dto.setEndTime(s.getEndTime());
+            dto.setInstructorName(s.getInstructor().getName());
+            dto.setDisciplineName(s.getDiscipline().getName());
+            dto.setStatus(s.getEstado().name()); // Estado de la clase
+            String asis = attendanceMap.get(s.getId());
+            dto.setAttendance(asis != null ? asis : "PENDIENTE");
+
+            return dto;
+        }).toList();
+    }
+
     @Override
     public Page<ClientResponseDTO> searchClients(String search, int page, int size) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
@@ -108,9 +148,10 @@ public class ClientServiceImpl implements ClientService {
 
     @Transactional
     @Override
-    public void assignPlanManually(Long clientId, Long planId, String paymentMethod) {
+    public void assignPlanManually(Long clientId, Long planId, String paymentMethod, BigDecimal discount) {
         Client client = userRepository.findById(clientId)
                 .orElseThrow(() -> new EntityNotFoundException("Cliente no encontrado"));
+
 
         if (!client.isTrialCompleted()) {
             throw new IllegalStateException("No se puede asignar un plan. El cliente aún no ha completado su clase de prueba.");
@@ -119,10 +160,18 @@ public class ClientServiceImpl implements ClientService {
         Plan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new EntityNotFoundException("Plan no encontrado"));
 
+        BigDecimal discountValue = (discount != null) ? discount : BigDecimal.ZERO;
+
+        BigDecimal planPrice = BigDecimal.valueOf(plan.getPrice());
+
+        BigDecimal finalPrice = planPrice.subtract(discountValue);
+
+        if (finalPrice.compareTo(BigDecimal.ZERO) < 0) {
+            finalPrice = BigDecimal.ZERO;
+        }
 
         LocalDate start = LocalDate.now();
         LocalDate end = start.plusDays(plan.getDuration());
-
 
         client.setPlan(plan);
         client.setSubscriptionStart(start);
@@ -136,7 +185,7 @@ public class ClientServiceImpl implements ClientService {
                 .planName(plan.getName())
                 .startDate(start)
                 .endDate(end)
-                .pricePaid(plan.getPrice())
+                .pricePaid(finalPrice.floatValue())
                 .assignedAt(LocalDateTime.now())
                 .assignedBy("MANUAL")
                 .paymentMethod(paymentMethod)
@@ -148,7 +197,7 @@ public class ClientServiceImpl implements ClientService {
         Payment manualPayment = Payment.builder()
                 .client(client)
                 .plan(plan)
-                .amount(plan.getPrice())
+                .amount(finalPrice.floatValue())
                 .status("approved")
                 .paymentDate(LocalDateTime.now())
                 .mpPaymentId(fakePaymentId)

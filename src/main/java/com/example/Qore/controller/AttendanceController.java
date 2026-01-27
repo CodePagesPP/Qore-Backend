@@ -24,7 +24,7 @@ public class AttendanceController {
     public ResponseEntity<Map<String, String>> markAttendance(
             @RequestParam Long classId,
             @RequestParam Long clientId,
-            @RequestParam AttendanceStatus status) {
+            @RequestParam String status) {
 
         attendanceService.markAttendance(classId, clientId, status);
 
